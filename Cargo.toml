@@ -1,0 +1,29 @@
+[workspace]
+resolver = "2"
+members = [
+    "dlms-core",
+    "dlms-hdlc",
+    "dlms-axdr",
+    "dlms-asn1",
+    "dlms-security",
+    "dlms-cosem",
+    "dlms-client",
+    "dlms-server",
+    "dlms-transport",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "DLMS/COSEM protocol stack in pure Rust"
+repository = "https://github.com/ViewWay/dlms-cosem-rust"
+
+[workspace.dependencies]
+dlms-core = { path = "dlms-core" }
+dlms-hdlc = { path = "dlms-hdlc" }
+dlms-axdr = { path = "dlms-axdr" }
+dlms-asn1 = { path = "dlms-asn1" }
+dlms-security = { path = "dlms-security" }
+dlms-cosem = { path = "dlms-cosem" }
+dlms-transport = { path = "dlms-transport" }

@@ -1,0 +1,13 @@
+[package]
+name = "dlms-cosem"
+version.workspace = true
+edition.workspace = true
+description = "COSEM interface classes for DLMS/COSEM"
+
+[features]
+default = ["std"]
+std = []
+
+[dependencies]
+dlms-core = { path = "../dlms-core" }
+dlms-axdr = { path = "../dlms-axdr" }

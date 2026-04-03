@@ -1,0 +1,12 @@
+[package]
+name = "dlms-axdr"
+version.workspace = true
+edition.workspace = true
+description = "AXDR encoding/decoding for DLMS/COSEM"
+
+[features]
+default = ["std"]
+std = []
+
+[dependencies]
+dlms-core = { path = "../dlms-core" }

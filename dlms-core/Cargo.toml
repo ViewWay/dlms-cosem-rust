@@ -1,0 +1,11 @@
+[package]
+name = "dlms-core"
+version.workspace = true
+edition.workspace = true
+description = "Core types for DLMS/COSEM protocol"
+
+[features]
+default = ["std"]
+std = []
+
+[dependencies]

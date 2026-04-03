@@ -1,0 +1,19 @@
+[package]
+name = "dlms-security"
+version.workspace = true
+edition.workspace = true
+description = "Security for DLMS/COSEM (HLS-ISM, AES-GCM, SM4)"
+
+[features]
+default = ["std", "aes"]
+std = []
+aes = ["aes-gcm"]
+# All crypto (pulls in external crates)
+full = ["aes"]
+
+[dependencies]
+dlms-core = { path = "../dlms-core" }
+
+[dependencies.aes-gcm]
+version = "0.10"
+optional = true

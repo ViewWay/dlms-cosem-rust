@@ -1,0 +1,16 @@
+[package]
+name = "dlms-server"
+version.workspace = true
+edition.workspace = true
+description = "DLMS/COSEM server"
+
+[features]
+default = ["std"]
+std = []
+
+[dependencies]
+dlms-core = { path = "../dlms-core" }
+dlms-hdlc = { path = "../dlms-hdlc" }
+dlms-axdr = { path = "../dlms-axdr" }
+dlms-asn1 = { path = "../dlms-asn1" }
+dlms-cosem = { path = "../dlms-cosem" }

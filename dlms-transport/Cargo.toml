@@ -1,0 +1,33 @@
+[package]
+name = "dlms-transport"
+version.workspace = true
+edition.workspace = true
+description = "Transport layer for DLMS/COSEM"
+
+[features]
+default = ["std", "tcp", "udp"]
+std = []
+tcp = []
+udp = []
+tls = ["rustls", "webpki-roots"]
+serial = ["serialport"]
+
+[dependencies]
+dlms-core = { path = "../dlms-core" }
+
+[dependencies.rustls]
+version = "0.23"
+optional = true
+
+[dependencies.webpki-roots]
+version = "0.26"
+optional = true
+
+[dependencies.serialport]
+version = "4.5"
+optional = true
+
+[dependencies.tokio]
+version = "1"
+features = ["net", "io-util", "time", "macros"]
+optional = true

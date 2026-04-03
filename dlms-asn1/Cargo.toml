@@ -1,0 +1,13 @@
+[package]
+name = "dlms-asn1"
+version.workspace = true
+edition.workspace = true
+description = "ASN.1 BER/DER encoding for DLMS/COSEM"
+
+[features]
+default = ["std"]
+std = []
+
+[dependencies]
+dlms-core = { path = "../dlms-core" }
+dlms-axdr = { path = "../dlms-axdr" }

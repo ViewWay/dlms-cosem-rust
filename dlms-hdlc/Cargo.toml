@@ -1,0 +1,12 @@
+[package]
+name = "dlms-hdlc"
+version.workspace = true
+edition.workspace = true
+description = "HDLC framing for DLMS/COSEM"
+
+[features]
+default = ["std"]
+std = []
+
+[dependencies]
+dlms-core = { path = "../dlms-core" }
