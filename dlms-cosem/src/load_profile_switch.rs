@@ -1,16 +1,16 @@
-//! IC026 Load Profile Switch
+//! IC026 Utility Tables
 
 use dlms_core::{CosemObject, CosemObjectError, DlmsData, ObisCode};
 
 /// Load Profile Switch - controls load profile capture
-pub struct LoadProfileSwitch {
+pub struct UtilityTables {
     logical_name: ObisCode,
     active_profile: u8,
     profiles: Vec<DlmsData>,
     period: u32,
 }
 
-impl LoadProfileSwitch {
+impl UtilityTables {
     pub fn new(logical_name: ObisCode) -> Self {
         Self {
             logical_name,
@@ -41,7 +41,7 @@ impl LoadProfileSwitch {
     }
 }
 
-impl CosemObject for LoadProfileSwitch {
+impl CosemObject for UtilityTables {
     fn class_id(&self) -> u16 {
         26
     }
@@ -103,27 +103,27 @@ mod tests {
 
     #[test]
     fn test_load_profile_switch_new() {
-        let lps = LoadProfileSwitch::new(ObisCode::CLOCK);
+        let lps = UtilityTables::new(ObisCode::CLOCK);
         assert_eq!(lps.class_id(), 26);
     }
 
     #[test]
     fn test_load_profile_switch_active_profile() {
-        let mut lps = LoadProfileSwitch::new(ObisCode::CLOCK);
+        let mut lps = UtilityTables::new(ObisCode::CLOCK);
         lps.set_active_profile(2);
         assert_eq!(lps.active_profile(), 2);
     }
 
     #[test]
     fn test_load_profile_switch_period() {
-        let mut lps = LoadProfileSwitch::new(ObisCode::CLOCK);
+        let mut lps = UtilityTables::new(ObisCode::CLOCK);
         lps.set_period(900);
         assert_eq!(lps.period(), 900);
     }
 
     #[test]
     fn test_load_profile_switch_roundtrip() {
-        let mut lps = LoadProfileSwitch::new(ObisCode::CLOCK);
+        let mut lps = UtilityTables::new(ObisCode::CLOCK);
         let bytes = dlms_axdr::encode(&DlmsData::Unsigned(3));
         lps.attribute_from_bytes(2, &bytes).unwrap();
         assert_eq!(lps.active_profile(), 3);
@@ -131,7 +131,7 @@ mod tests {
 
     #[test]
     fn test_load_profile_switch_attr1() {
-        let lps = LoadProfileSwitch::new(ObisCode::CLOCK);
+        let lps = UtilityTables::new(ObisCode::CLOCK);
         let bytes = lps.attribute_to_bytes(1).unwrap();
         assert_eq!(bytes.len(), 8);
     }

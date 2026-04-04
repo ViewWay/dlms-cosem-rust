@@ -47,7 +47,7 @@ impl HanSetup {
 
 impl CosemObject for HanSetup {
     fn class_id(&self) -> u16 {
-        52
+        209
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -123,7 +123,7 @@ mod tests {
     #[test]
     fn test_han_setup_new() {
         let han = HanSetup::new(ObisCode::CLOCK);
-        assert_eq!(han.class_id(), 52);
+        assert_eq!(han.class_id(), 209);
         assert!(!han.enabled());
     }
 

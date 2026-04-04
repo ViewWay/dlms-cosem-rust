@@ -39,7 +39,7 @@ impl SinglePhaseExport {
 
 impl CosemObject for SinglePhaseExport {
     fn class_id(&self) -> u16 {
-        38
+        212
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -86,7 +86,7 @@ mod tests {
     #[test]
     fn test_single_phase_export_new() {
         let spe = SinglePhaseExport::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(1000));
-        assert_eq!(spe.class_id(), 38);
+        assert_eq!(spe.class_id(), 212);
     }
 
     #[test]

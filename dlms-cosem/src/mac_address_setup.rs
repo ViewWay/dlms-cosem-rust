@@ -46,7 +46,7 @@ impl MacAddressSetup {
 
 impl CosemObject for MacAddressSetup {
     fn class_id(&self) -> u16 {
-        48
+        43
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -100,7 +100,7 @@ mod tests {
     #[test]
     fn test_mac_address_setup_new() {
         let mac = MacAddressSetup::new(ObisCode::CLOCK);
-        assert_eq!(mac.class_id(), 48);
+        assert_eq!(mac.class_id(), 43);
     }
 
     #[test]

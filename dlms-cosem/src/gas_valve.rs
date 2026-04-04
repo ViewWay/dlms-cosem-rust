@@ -39,7 +39,7 @@ impl GasValve {
 
 impl CosemObject for GasValve {
     fn class_id(&self) -> u16 {
-        81
+        206
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -113,7 +113,7 @@ mod tests {
     #[test]
     fn test_gas_valve_new() {
         let gv = GasValve::new(ObisCode::CLOCK);
-        assert_eq!(gv.class_id(), 81);
+        assert_eq!(gv.class_id(), 206);
         assert!(!gv.is_open());
     }
 

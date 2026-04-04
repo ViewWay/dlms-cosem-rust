@@ -39,7 +39,7 @@ impl GasFlow {
 
 impl CosemObject for GasFlow {
     fn class_id(&self) -> u16 {
-        80
+        205
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -86,7 +86,7 @@ mod tests {
     #[test]
     fn test_gas_flow_new() {
         let gf = GasFlow::new(ObisCode::CLOCK, DlmsData::DoubleLong(100));
-        assert_eq!(gf.class_id(), 80);
+        assert_eq!(gf.class_id(), 205);
     }
 
     #[test]

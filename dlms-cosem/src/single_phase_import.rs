@@ -39,7 +39,7 @@ impl SinglePhaseImport {
 
 impl CosemObject for SinglePhaseImport {
     fn class_id(&self) -> u16 {
-        37
+        211
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -86,7 +86,7 @@ mod tests {
     #[test]
     fn test_single_phase_import_new() {
         let spi = SinglePhaseImport::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(1000));
-        assert_eq!(spi.class_id(), 37);
+        assert_eq!(spi.class_id(), 211);
         assert_eq!(spi.unit(), 1);
     }
 

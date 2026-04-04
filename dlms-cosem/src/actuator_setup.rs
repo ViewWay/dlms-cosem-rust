@@ -47,7 +47,7 @@ impl ActuatorSetup {
 
 impl CosemObject for ActuatorSetup {
     fn class_id(&self) -> u16 {
-        76
+        204
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -108,7 +108,7 @@ mod tests {
     #[test]
     fn test_actuator_setup_new() {
         let asetup = ActuatorSetup::new(ObisCode::CLOCK);
-        assert_eq!(asetup.class_id(), 76);
+        assert_eq!(asetup.class_id(), 204);
     }
 
     #[test]

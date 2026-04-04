@@ -50,7 +50,7 @@ impl Multiplier {
 
 impl CosemObject for Multiplier {
     fn class_id(&self) -> u16 {
-        90
+        215
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -103,7 +103,7 @@ mod tests {
     #[test]
     fn test_multiplier_new() {
         let m = Multiplier::new(ObisCode::CLOCK);
-        assert_eq!(m.class_id(), 90);
+        assert_eq!(m.class_id(), 215);
         assert_eq!(m.multiplier(), 1.0);
     }
 

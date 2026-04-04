@@ -45,7 +45,7 @@ impl Actuator {
 
 impl CosemObject for Actuator {
     fn class_id(&self) -> u16 {
-        75
+        203
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -124,7 +124,7 @@ mod tests {
     #[test]
     fn test_actuator_new() {
         let a = Actuator::new(ObisCode::CLOCK);
-        assert_eq!(a.class_id(), 75);
+        assert_eq!(a.class_id(), 203);
         assert_eq!(*a.state(), ActuatorState::Off);
     }
 

@@ -41,7 +41,7 @@ impl HeatCostAllocator {
 
 impl CosemObject for HeatCostAllocator {
     fn class_id(&self) -> u16 {
-        83
+        208
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -100,7 +100,7 @@ mod tests {
     #[test]
     fn test_heat_cost_allocator_new() {
         let hca = HeatCostAllocator::new(ObisCode::CLOCK, DlmsData::DoubleLong(100));
-        assert_eq!(hca.class_id(), 83);
+        assert_eq!(hca.class_id(), 208);
     }
 
     #[test]

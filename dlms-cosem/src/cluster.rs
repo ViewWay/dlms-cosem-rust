@@ -31,7 +31,7 @@ impl Cluster {
 
 impl CosemObject for Cluster {
     fn class_id(&self) -> u16 {
-        85
+        218
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -78,7 +78,7 @@ mod tests {
     #[test]
     fn test_cluster_new() {
         let c = Cluster::new(ObisCode::CLOCK);
-        assert_eq!(c.class_id(), 85);
+        assert_eq!(c.class_id(), 218);
     }
 
     #[test]

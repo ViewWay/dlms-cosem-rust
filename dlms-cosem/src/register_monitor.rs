@@ -51,7 +51,7 @@ impl RegisterMonitor {
 
 impl CosemObject for RegisterMonitor {
     fn class_id(&self) -> u16 {
-        11
+        21
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -114,7 +114,7 @@ mod tests {
     #[test]
     fn test_register_monitor_new() {
         let rm = RegisterMonitor::new(ObisCode::CLOCK);
-        assert_eq!(rm.class_id(), 11);
+        assert_eq!(rm.class_id(), 21);
     }
 
     #[test]

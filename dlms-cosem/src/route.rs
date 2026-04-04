@@ -47,7 +47,7 @@ impl Route {
 
 impl CosemObject for Route {
     fn class_id(&self) -> u16 {
-        86
+        219
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -119,7 +119,7 @@ mod tests {
     #[test]
     fn test_route_new() {
         let r = Route::new(ObisCode::CLOCK);
-        assert_eq!(r.class_id(), 86);
+        assert_eq!(r.class_id(), 219);
     }
 
     #[test]

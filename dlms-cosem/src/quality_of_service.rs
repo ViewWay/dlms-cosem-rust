@@ -35,7 +35,7 @@ impl QualityOfService {
 
 impl CosemObject for QualityOfService {
     fn class_id(&self) -> u16 {
-        67
+        200
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -85,7 +85,7 @@ mod tests {
     #[test]
     fn test_qos_new() {
         let qos = QualityOfService::new(ObisCode::CLOCK);
-        assert_eq!(qos.class_id(), 67);
+        assert_eq!(qos.class_id(), 200);
     }
 
     #[test]

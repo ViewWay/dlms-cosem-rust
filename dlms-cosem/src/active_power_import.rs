@@ -40,7 +40,7 @@ impl ActivePowerImport {
 
 impl CosemObject for ActivePowerImport {
     fn class_id(&self) -> u16 {
-        29
+        210
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -87,7 +87,7 @@ mod tests {
     #[test]
     fn test_active_power_import_new() {
         let api = ActivePowerImport::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(1000));
-        assert_eq!(api.class_id(), 29);
+        assert_eq!(api.class_id(), 210);
         assert_eq!(api.unit(), 27);
     }
 

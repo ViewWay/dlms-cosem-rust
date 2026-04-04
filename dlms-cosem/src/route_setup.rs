@@ -37,7 +37,7 @@ impl RouteSetup {
 
 impl CosemObject for RouteSetup {
     fn class_id(&self) -> u16 {
-        87
+        213
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -95,7 +95,7 @@ mod tests {
     #[test]
     fn test_route_setup_new() {
         let rs = RouteSetup::new(ObisCode::CLOCK);
-        assert_eq!(rs.class_id(), 87);
+        assert_eq!(rs.class_id(), 213);
         assert!(!rs.routing_enabled());
     }
 

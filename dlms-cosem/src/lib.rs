@@ -124,7 +124,7 @@ pub use ipv6_setup::Ipv6Setup;
 pub use ipv6_tcp_setup::Ipv6TcpSetup;
 pub use lift_management::LiftManagement;
 pub use load_profile::LoadProfile;
-pub use load_profile_switch::LoadProfileSwitch;
+pub use load_profile_switch::UtilityTables;
 pub use local_display::LocalDisplay;
 pub use lorawan_setup::LorawanSetup;
 pub use lp_setup::LpSetup;
@@ -223,30 +223,32 @@ pub mod class_id {
     pub const IMAGE_TRANSFER: u16 = 71;
     pub const LIFT_MANAGEMENT: u16 = 72;
     pub const APPLICATION_CONTEXT: u16 = 88;
-    pub const REGISTER_MONITOR: u16 = 11;
-    pub const LOAD_PROFILE_SWITCH: u16 = 26;
-    pub const ACTIVE_POWER_IMPORT: u16 = 29;
-    pub const SINGLE_PHASE_IMPORT: u16 = 37;
-    pub const SINGLE_PHASE_EXPORT: u16 = 38;
-    pub const MAC_ADDRESS_SETUP: u16 = 48;
-    pub const HAN_SETUP: u16 = 52;
-    pub const QUALITY_OF_SERVICE: u16 = 67;
-    pub const SENSOR: u16 = 73;
-    pub const SENSOR_SETUP: u16 = 74;
-    pub const ACTUATOR: u16 = 75;
-    pub const ACTUATOR_SETUP: u16 = 76;
-    pub const GAS_FLOW: u16 = 80;
-    pub const GAS_VALVE: u16 = 81;
-    pub const WATER_FLOW: u16 = 82;
-    pub const HEAT_COST_ALLOCATOR: u16 = 83;
-    pub const COMPACT_DATA: u16 = 84;
-    pub const CLUSTER: u16 = 85;
-    pub const ROUTE: u16 = 86;
-    pub const ROUTE_SETUP: u16 = 87;
-    pub const TRANSPORT: u16 = 89;
-    pub const MULTIPLIER: u16 = 90;
-    pub const MULTIPLIER_SETUP: u16 = 91;
-    pub const UTILITY_SUB_SCHEDULE: u16 = 92;
+    // Blue Book Ed16 accurate IDs
+    pub const REGISTER_MONITOR: u16 = 21;
+    pub const UTILITY_TABLES: u16 = 26;
+    pub const MAC_ADDRESS_SETUP_BLUEBOOK: u16 = 43;
+    // Custom/Utility class IDs (200+, not in Blue Book)
+    pub const CUSTOM_ACTIVE_POWER_IMPORT: u16 = 210;
+    pub const CUSTOM_SINGLE_PHASE_IMPORT: u16 = 211;
+    pub const CUSTOM_SINGLE_PHASE_EXPORT: u16 = 212;
+    pub const CUSTOM_HAN_SETUP: u16 = 209;
+    pub const CUSTOM_QOS: u16 = 200;
+    pub const CUSTOM_SENSOR: u16 = 201;
+    pub const CUSTOM_SENSOR_SETUP: u16 = 202;
+    pub const CUSTOM_ACTUATOR: u16 = 203;
+    pub const CUSTOM_ACTUATOR_SETUP: u16 = 204;
+    pub const CUSTOM_GAS_FLOW: u16 = 205;
+    pub const CUSTOM_GAS_VALVE: u16 = 206;
+    pub const CUSTOM_WATER_FLOW: u16 = 207;
+    pub const CUSTOM_HEAT_COST_ALLOCATOR: u16 = 208;
+    pub const COMPACT_DATA: u16 = 62;
+    pub const CUSTOM_CLUSTER: u16 = 218;
+    pub const CUSTOM_ROUTE: u16 = 219;
+    pub const CUSTOM_ROUTE_SETUP: u16 = 213;
+    pub const CUSTOM_TRANSPORT: u16 = 214;
+    pub const CUSTOM_MULTIPLIER: u16 = 215;
+    pub const CUSTOM_MULTIPLIER_SETUP: u16 = 216;
+    pub const CUSTOM_UTILITY_SUB_SCHEDULE: u16 = 217;
 }
 
 #[cfg(test)]

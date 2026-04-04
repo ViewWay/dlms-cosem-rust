@@ -46,7 +46,7 @@ impl UtilitySubSchedule {
 
 impl CosemObject for UtilitySubSchedule {
     fn class_id(&self) -> u16 {
-        92
+        217
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -109,7 +109,7 @@ mod tests {
     #[test]
     fn test_utility_sub_schedule_new() {
         let uss = UtilitySubSchedule::new(ObisCode::CLOCK);
-        assert_eq!(uss.class_id(), 92);
+        assert_eq!(uss.class_id(), 217);
     }
 
     #[test]

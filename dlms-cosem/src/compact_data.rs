@@ -37,7 +37,7 @@ impl CompactData {
 
 impl CosemObject for CompactData {
     fn class_id(&self) -> u16 {
-        84
+        62
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -88,7 +88,7 @@ mod tests {
     #[test]
     fn test_compact_data_new() {
         let cd = CompactData::new(ObisCode::CLOCK);
-        assert_eq!(cd.class_id(), 84);
+        assert_eq!(cd.class_id(), 62);
         assert!(cd.buffer().is_empty());
     }
 

@@ -45,7 +45,7 @@ impl Transport {
 
 impl CosemObject for Transport {
     fn class_id(&self) -> u16 {
-        89
+        214
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -113,7 +113,7 @@ mod tests {
     #[test]
     fn test_transport_new() {
         let t = Transport::new(ObisCode::CLOCK);
-        assert_eq!(t.class_id(), 89);
+        assert_eq!(t.class_id(), 214);
         assert_eq!(t.baud_rate(), 9600);
     }
 

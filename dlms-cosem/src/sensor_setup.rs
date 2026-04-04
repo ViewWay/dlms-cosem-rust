@@ -41,7 +41,7 @@ impl SensorSetup {
 
 impl CosemObject for SensorSetup {
     fn class_id(&self) -> u16 {
-        74
+        202
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -101,7 +101,7 @@ mod tests {
     #[test]
     fn test_sensor_setup_new() {
         let ss = SensorSetup::new(ObisCode::CLOCK);
-        assert_eq!(ss.class_id(), 74);
+        assert_eq!(ss.class_id(), 202);
         assert!(ss.enabled());
     }
 

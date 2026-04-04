@@ -39,7 +39,7 @@ impl WaterFlow {
 
 impl CosemObject for WaterFlow {
     fn class_id(&self) -> u16 {
-        82
+        207
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -86,7 +86,7 @@ mod tests {
     #[test]
     fn test_water_flow_new() {
         let wf = WaterFlow::new(ObisCode::CLOCK, DlmsData::DoubleLong(100));
-        assert_eq!(wf.class_id(), 82);
+        assert_eq!(wf.class_id(), 207);
     }
 
     #[test]
