@@ -17,12 +17,14 @@ mod hls;
 mod kdf;
 mod key_management;
 mod sm4;
+mod sm4_gcm;
 mod suite;
 
 pub use hls::{HlsAuthResult, HlsContext, HlsStep};
 pub use kdf::{kdf, kdf_gmac};
 pub use key_management::KeyManagement;
 pub use sm4::{sm4_decrypt, sm4_encrypt, Sm4Block, Sm4Key};
+pub use sm4_gcm::{sm4_gcm_decrypt, sm4_gcm_encrypt, sm4_gmac, sm4_gmac_verify};
 pub use suite::SecuritySuite;
 
 #[cfg(feature = "aes")]
