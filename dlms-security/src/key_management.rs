@@ -2,7 +2,6 @@
 
 // no_std support
 
-
 /// Key management for multiple encryption keys
 pub struct KeyManagement {
     keys: Vec<(u8, [u8; 16])>,

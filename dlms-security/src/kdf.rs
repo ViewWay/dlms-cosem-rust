@@ -1,6 +1,6 @@
 //! KDF (Key Derivation Function) for DLMS/COSEM
 
-use crate::sm4::{Sm4Key, Sm4Block, sm4_encrypt};
+use crate::sm4::{sm4_encrypt, Sm4Block, Sm4Key};
 
 /// Simple KDF based on SM4 (for environments without external crypto)
 /// Uses a counter-mode construction with SM4 as PRF

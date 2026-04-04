@@ -7,7 +7,6 @@
 
 // no_std support: feature gate for no_std
 
-
 use core::fmt;
 
 mod crc;
@@ -15,7 +14,7 @@ mod frame;
 mod parser;
 
 pub use crc::{crc16_hdlc, crc16_hdlc_update};
-pub use frame::{HdlcFrame, FrameType, ControlField, AddressField};
+pub use frame::{AddressField, ControlField, FrameType, HdlcFrame};
 pub use parser::{HdlcParser, ParserState};
 
 /// HDLC constants
@@ -195,7 +194,13 @@ mod tests {
         // 0x26 = 0b00100110: bit0=0 (I), N(S)=0b001=1, N(R)=0b011=3
         // Actually let's use a cleaner value
         let cf2 = ControlField::from_byte(0x00);
-        assert!(matches!(cf2.frame_type(), FrameType::I { send_seq: 0, recv_seq: 0 }));
+        assert!(matches!(
+            cf2.frame_type(),
+            FrameType::I {
+                send_seq: 0,
+                recv_seq: 0
+            }
+        ));
     }
 
     #[test]
@@ -380,7 +385,10 @@ mod tests {
 
     #[test]
     fn test_hdlc_error_crc_display() {
-        let err = HdlcError::CrcError { expected: 0x1234, actual: 0x5678 };
+        let err = HdlcError::CrcError {
+            expected: 0x1234,
+            actual: 0x5678,
+        };
         let s = format!("{err}");
         assert!(s.contains("CRC"));
     }

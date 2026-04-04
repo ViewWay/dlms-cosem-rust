@@ -314,7 +314,10 @@ mod tests {
 
     #[test]
     fn test_as_str() {
-        assert_eq!(DlmsData::VisibleString("hello".into()).as_str(), Some("hello"));
+        assert_eq!(
+            DlmsData::VisibleString("hello".into()).as_str(),
+            Some("hello")
+        );
     }
 
     #[test]
@@ -353,7 +356,11 @@ mod tests {
         let tags = [
             DlmsData::None.tag(),
             DlmsData::Boolean(true).tag(),
-            DlmsData::BitString { unused_bits: 0, data: vec![] }.tag(),
+            DlmsData::BitString {
+                unused_bits: 0,
+                data: vec![],
+            }
+            .tag(),
             DlmsData::DoubleLong(0).tag(),
             DlmsData::DoubleLongUnsigned(0).tag(),
             DlmsData::OctetString(vec![]).tag(),
@@ -373,7 +380,11 @@ mod tests {
             DlmsData::Time([0; 4]).tag(),
             DlmsData::Array(vec![]).tag(),
             DlmsData::Structure(vec![]).tag(),
-            DlmsData::CompactArray { header: vec![], data: vec![] }.tag(),
+            DlmsData::CompactArray {
+                header: vec![],
+                data: vec![],
+            }
+            .tag(),
             DlmsData::Enum(0).tag(),
             DlmsData::CompactArrayDefinition(vec![]).tag(),
         ];

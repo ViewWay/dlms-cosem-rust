@@ -1,6 +1,6 @@
 //! IC003 Register
 
-use dlms_core::{CosemObject, ObisCode, DlmsData, CosemObjectError};
+use dlms_core::{CosemObject, CosemObjectError, DlmsData, ObisCode};
 
 pub struct Register {
     logical_name: ObisCode,
@@ -11,30 +11,58 @@ pub struct Register {
 
 impl Register {
     pub fn new(logical_name: ObisCode, value: DlmsData) -> Self {
-        Self { logical_name, value, unit: 0, scaler: 0 }
+        Self {
+            logical_name,
+            value,
+            unit: 0,
+            scaler: 0,
+        }
     }
 
     pub fn with_unit(logical_name: ObisCode, value: DlmsData, unit: u8, scaler: i8) -> Self {
-        Self { logical_name, value, unit, scaler }
+        Self {
+            logical_name,
+            value,
+            unit,
+            scaler,
+        }
     }
 
-    pub fn value(&self) -> &DlmsData { &self.value }
-    pub fn set_value(&mut self, value: DlmsData) { self.value = value; }
-    pub fn unit(&self) -> u8 { self.unit }
-    pub fn scaler(&self) -> i8 { self.scaler }
+    pub fn value(&self) -> &DlmsData {
+        &self.value
+    }
+    pub fn set_value(&mut self, value: DlmsData) {
+        self.value = value;
+    }
+    pub fn unit(&self) -> u8 {
+        self.unit
+    }
+    pub fn scaler(&self) -> i8 {
+        self.scaler
+    }
 }
 
 impl CosemObject for Register {
-    fn class_id(&self) -> u16 { 3 }
-    fn logical_name(&self) -> ObisCode { self.logical_name }
-    fn attribute_count(&self) -> u8 { 3 }
-    fn method_count(&self) -> u8 { 0 }
+    fn class_id(&self) -> u16 {
+        3
+    }
+    fn logical_name(&self) -> ObisCode {
+        self.logical_name
+    }
+    fn attribute_count(&self) -> u8 {
+        3
+    }
+    fn method_count(&self) -> u8 {
+        0
+    }
 
     fn attribute_to_bytes(&self, attr: u8) -> Option<Vec<u8>> {
         match attr {
             1 => {
                 let name = self.logical_name.to_bytes();
-                Some(vec![0x09, 0x06, name[0], name[1], name[2], name[3], name[4], name[5]])
+                Some(vec![
+                    0x09, 0x06, name[0], name[1], name[2], name[3], name[4], name[5],
+                ])
             }
             2 => Some(dlms_axdr::encode(&self.value)),
             3 => Some(dlms_axdr::encode(&DlmsData::Structure(vec![

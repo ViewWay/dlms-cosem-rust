@@ -1,8 +1,8 @@
 //! AXDR encoder
 
-use std::vec::Vec;
-use dlms_core::DlmsData;
 use super::encode_length;
+use dlms_core::DlmsData;
+use std::vec::Vec;
 
 pub struct AxdvEncoder {
     buffer: Vec<u8>,

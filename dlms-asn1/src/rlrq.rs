@@ -1,7 +1,7 @@
 //! RLRQ (Release Request) APDU
 
+use super::{Asn1Error, BerDecoder, BerEncoder};
 use std::vec::Vec;
-use super::{BerEncoder, BerDecoder, Asn1Error};
 
 /// RLRQ APDU - Release Request
 #[derive(Debug, Clone, PartialEq, Eq)]

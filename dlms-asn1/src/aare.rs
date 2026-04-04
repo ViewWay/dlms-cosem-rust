@@ -1,7 +1,7 @@
 //! AARE (Association Response) APDU
 
+use super::{Asn1Error, BerDecoder, BerEncoder};
 use std::vec::Vec;
-use super::{BerEncoder, BerDecoder, Asn1Error};
 
 /// AARE APDU - Association Response
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -32,7 +32,9 @@ impl AareApdu {
 
         // Application context name (IMPLICIT [2])
         content.push(0xA2);
-        content.extend(BerEncoder::encode_length(self.application_context_name.len()));
+        content.extend(BerEncoder::encode_length(
+            self.application_context_name.len(),
+        ));
         content.extend(&self.application_context_name);
 
         // Responding AP title (IMPLICIT [3]) - optional

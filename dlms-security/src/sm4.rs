@@ -9,11 +9,15 @@ pub struct Sm4Key(pub [u8; 16]);
 pub struct Sm4Block(pub [u8; 16]);
 
 impl From<[u8; 16]> for Sm4Key {
-    fn from(v: [u8; 16]) -> Self { Self(v) }
+    fn from(v: [u8; 16]) -> Self {
+        Self(v)
+    }
 }
 
 impl From<[u8; 16]> for Sm4Block {
-    fn from(v: [u8; 16]) -> Self { Self(v) }
+    fn from(v: [u8; 16]) -> Self {
+        Self(v)
+    }
 }
 
 impl core::fmt::Debug for Sm4Key {
@@ -53,14 +57,10 @@ const FK: [u32; 4] = [0xA3B1BAC6, 0x56AA3350, 0x677D9197, 0xB27022DC];
 
 // Constant parameter CK
 const CK: [u32; 32] = [
-    0x00070E15, 0x1C232A31, 0x383F464D, 0x545B6269,
-    0x70777E85, 0x8C939AA1, 0xA8AFB6BD, 0xC4CBD2D9,
-    0xE0E7EEF5, 0xFC030A11, 0x181F262D, 0x343B4249,
-    0x50575E65, 0x6C737A81, 0x888F969D, 0xA4ABB2B9,
-    0xC0C7CED5, 0xDCE3EAF1, 0xF8FF060D, 0x141B2229,
-    0x30373E45, 0x4C535A61, 0x686F767D, 0x848B9299,
-    0xA0A7AEB5, 0xBCC3CAD1, 0xD8DFE6ED, 0xF4FB0209,
-    0x10171E25, 0x2C333A41, 0x484F565D, 0x646B7279,
+    0x00070E15, 0x1C232A31, 0x383F464D, 0x545B6269, 0x70777E85, 0x8C939AA1, 0xA8AFB6BD, 0xC4CBD2D9,
+    0xE0E7EEF5, 0xFC030A11, 0x181F262D, 0x343B4249, 0x50575E65, 0x6C737A81, 0x888F969D, 0xA4ABB2B9,
+    0xC0C7CED5, 0xDCE3EAF1, 0xF8FF060D, 0x141B2229, 0x30373E45, 0x4C535A61, 0x686F767D, 0x848B9299,
+    0xA0A7AEB5, 0xBCC3CAD1, 0xD8DFE6ED, 0xF4FB0209, 0x10171E25, 0x2C333A41, 0x484F565D, 0x646B7279,
 ];
 
 fn u8_to_u32(b: &[u8]) -> u32 {
@@ -73,7 +73,12 @@ fn u32_to_u8(v: u32) -> [u8; 4] {
 
 fn tau(a: u32) -> u32 {
     let b = a.to_be_bytes();
-    let c = [SBOX[b[0] as usize], SBOX[b[1] as usize], SBOX[b[2] as usize], SBOX[b[3] as usize]];
+    let c = [
+        SBOX[b[0] as usize],
+        SBOX[b[1] as usize],
+        SBOX[b[2] as usize],
+        SBOX[b[3] as usize],
+    ];
     u32::from_be_bytes(c)
 }
 
@@ -154,7 +159,10 @@ mod tests {
     fn test_tau() {
         // tau should apply SBOX to each byte
         let result = tau(0x00000000);
-        let expected = (SBOX[0] as u32) << 24 | (SBOX[0] as u32) << 16 | (SBOX[0] as u32) << 8 | SBOX[0] as u32;
+        let expected = (SBOX[0] as u32) << 24
+            | (SBOX[0] as u32) << 16
+            | (SBOX[0] as u32) << 8
+            | SBOX[0] as u32;
         assert_eq!(result, expected);
     }
 

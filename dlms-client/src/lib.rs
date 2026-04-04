@@ -6,7 +6,7 @@
 //! - HDLC and TCP (wrapper) transport
 //! - Timeout and retry support
 
-use dlms_core::{ObisCode, DlmsData, AccessResult};
+use dlms_core::{AccessResult, DlmsData, ObisCode};
 use dlms_transport::{Transport, TransportError};
 use std::time::Duration;
 
@@ -65,12 +65,20 @@ impl<T: Transport> DlmsClient<T> {
         }
     }
 
-    pub fn state(&self) -> ClientState { self.state }
-    pub fn is_associated(&self) -> bool { self.state == ClientState::Associated }
+    pub fn state(&self) -> ClientState {
+        self.state
+    }
+    pub fn is_associated(&self) -> bool {
+        self.state == ClientState::Associated
+    }
 
     fn next_invoke_id(&mut self) -> u8 {
         let id = self.invoke_id;
-        self.invoke_id = if self.invoke_id >= 0xF0 { 0xC0 } else { self.invoke_id + 1 };
+        self.invoke_id = if self.invoke_id >= 0xF0 {
+            0xC0
+        } else {
+            self.invoke_id + 1
+        };
         id
     }
 
@@ -90,7 +98,10 @@ impl<T: Transport> DlmsClient<T> {
 
         // Wait for UA
         let mut buf = [0u8; 1024];
-        let n = self.transport.recv(&mut buf).map_err(ClientError::Transport)?;
+        let n = self
+            .transport
+            .recv(&mut buf)
+            .map_err(ClientError::Transport)?;
         let mut parser = dlms_hdlc::HdlcParser::new();
         for &byte in &buf[..n] {
             if let Some(result) = parser.feed(byte) {
@@ -111,20 +122,31 @@ impl<T: Transport> DlmsClient<T> {
         let aarq_bytes = aarq.encode();
 
         // Send AARQ in I-frame
-        let control = dlms_hdlc::FrameType::I { send_seq: self.send_seq, recv_seq: self.recv_seq }.to_control();
+        let control = dlms_hdlc::FrameType::I {
+            send_seq: self.send_seq,
+            recv_seq: self.recv_seq,
+        }
+        .to_control();
         let frame = dlms_hdlc::build_frame(self.config.server_address, control, &aarq_bytes);
-        self.transport.send(&frame).map_err(ClientError::Transport)?;
+        self.transport
+            .send(&frame)
+            .map_err(ClientError::Transport)?;
         self.send_seq = (self.send_seq + 1) & 0x07;
 
         // Wait for AARE
-        let n = self.transport.recv(&mut buf).map_err(ClientError::Transport)?;
+        let n = self
+            .transport
+            .recv(&mut buf)
+            .map_err(ClientError::Transport)?;
         let mut parser2 = dlms_hdlc::HdlcParser::new();
         for &byte in &buf[..n] {
             if let Some(result) = parser2.feed(byte) {
                 let frame = result.map_err(|e| ClientError::Hdlc(e.to_string()))?;
                 let aare = dlms_asn1::AareApdu::decode(&frame.info)
                     .map_err(|e| ClientError::Asn1(e.to_string()))?;
-                if let dlms_hdlc::FrameType::I { recv_seq, .. } = dlms_hdlc::ControlField::from_byte(frame.control.to_byte()).frame_type() {
+                if let dlms_hdlc::FrameType::I { recv_seq, .. } =
+                    dlms_hdlc::ControlField::from_byte(frame.control.to_byte()).frame_type()
+                {
                     self.recv_seq = (recv_seq + 1) & 0x07;
                 }
                 self.state = ClientState::Associated;
@@ -139,7 +161,12 @@ impl<T: Transport> DlmsClient<T> {
     }
 
     /// Read an attribute from a COSEM object
-    pub fn get(&mut self, class_id: u16, obis: ObisCode, attribute_id: u8) -> Result<DlmsData, ClientError> {
+    pub fn get(
+        &mut self,
+        class_id: u16,
+        obis: ObisCode,
+        attribute_id: u8,
+    ) -> Result<DlmsData, ClientError> {
         if !self.is_associated() {
             return Err(ClientError::NotAssociated);
         }
@@ -152,7 +179,7 @@ impl<T: Transport> DlmsClient<T> {
         // CosemAttributeDescriptor
         get_request.push(0x02); // Structure tag
         get_request.push(0x04); // 4 elements
-        // class_id
+                                // class_id
         get_request.push(0x12); // LongUnsigned
         get_request.push(0x02);
         get_request.extend_from_slice(&class_id.to_be_bytes());
@@ -178,19 +205,30 @@ impl<T: Transport> DlmsClient<T> {
         apdu.extend_from_slice(&get_request[1..]);
 
         // Send in I-frame
-        let control = dlms_hdlc::FrameType::I { send_seq: self.send_seq, recv_seq: self.recv_seq }.to_control();
+        let control = dlms_hdlc::FrameType::I {
+            send_seq: self.send_seq,
+            recv_seq: self.recv_seq,
+        }
+        .to_control();
         let frame = dlms_hdlc::build_frame(self.config.server_address, control, &apdu);
-        self.transport.send(&frame).map_err(ClientError::Transport)?;
+        self.transport
+            .send(&frame)
+            .map_err(ClientError::Transport)?;
         self.send_seq = (self.send_seq + 1) & 0x07;
 
         // Receive response
         let mut buf = [0u8; 4096];
-        let n = self.transport.recv(&mut buf).map_err(ClientError::Transport)?;
+        let n = self
+            .transport
+            .recv(&mut buf)
+            .map_err(ClientError::Transport)?;
         let mut parser = dlms_hdlc::HdlcParser::new();
         for &byte in &buf[..n] {
             if let Some(result) = parser.feed(byte) {
                 let frame = result.map_err(|e| ClientError::Hdlc(e.to_string()))?;
-                if let dlms_hdlc::FrameType::I { recv_seq, .. } = dlms_hdlc::ControlField::from_byte(frame.control.to_byte()).frame_type() {
+                if let dlms_hdlc::FrameType::I { recv_seq, .. } =
+                    dlms_hdlc::ControlField::from_byte(frame.control.to_byte()).frame_type()
+                {
                     self.recv_seq = (recv_seq + 1) & 0x07;
                 }
                 // Parse response - simplified: try AXDR decode
@@ -314,7 +352,10 @@ mod tests {
 
     #[test]
     fn test_associate_result() {
-        let result = AssociateResult { accepted: true, result: 0 };
+        let result = AssociateResult {
+            accepted: true,
+            result: 0,
+        };
         assert!(result.accepted);
     }
 }

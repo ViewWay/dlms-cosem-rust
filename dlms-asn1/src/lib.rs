@@ -7,20 +7,19 @@
 
 // no_std support: feature gate for no_std
 
-
 use core::fmt;
 
-mod ber;
-mod aarq;
 mod aare;
-mod rlrq;
+mod aarq;
+mod ber;
 mod rlre;
+mod rlrq;
 
-pub use ber::{BerTag, BerEncoder, BerDecoder};
-pub use aarq::AarqApdu;
 pub use aare::AareApdu;
-pub use rlrq::RlrqApdu;
+pub use aarq::AarqApdu;
+pub use ber::{BerDecoder, BerEncoder, BerTag};
 pub use rlre::RlreApdu;
+pub use rlrq::RlrqApdu;
 
 /// Application context names
 pub mod app_context {
@@ -124,7 +123,8 @@ mod tests {
 
     #[test]
     fn test_ber_decode_octet_string() {
-        let (val, consumed) = BerDecoder::decode_octet_string(&[0x04, 0x03, 0x01, 0x02, 0x03]).unwrap();
+        let (val, consumed) =
+            BerDecoder::decode_octet_string(&[0x04, 0x03, 0x01, 0x02, 0x03]).unwrap();
         assert_eq!(val, vec![0x01, 0x02, 0x03]);
         assert_eq!(consumed, 5);
     }

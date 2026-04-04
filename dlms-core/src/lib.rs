@@ -12,19 +12,17 @@
 
 // no_std support: feature gate for no_std
 
-
-
 // Re-exports
-mod obis;
-mod datetime;
-mod data;
-mod cosem_object;
-mod attribute;
 mod access_result;
+mod attribute;
+mod cosem_object;
+mod data;
+mod datetime;
+mod obis;
 
-pub use obis::ObisCode;
-pub use datetime::CosemDateTime;
-pub use data::DlmsData;
-pub use cosem_object::{CosemObject, CosemObjectError};
-pub use attribute::{CosemAttribute, CosemMethod};
 pub use access_result::AccessResult;
+pub use attribute::{CosemAttribute, CosemMethod};
+pub use cosem_object::{CosemObject, CosemObjectError};
+pub use data::DlmsData;
+pub use datetime::CosemDateTime;
+pub use obis::ObisCode;

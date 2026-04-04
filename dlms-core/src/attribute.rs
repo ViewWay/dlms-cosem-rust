@@ -10,7 +10,11 @@ pub struct CosemAttribute {
 
 impl CosemAttribute {
     pub fn new(class_id: u16, logical_name: crate::ObisCode, attribute_id: u8) -> Self {
-        Self { class_id, logical_name, attribute_id }
+        Self {
+            class_id,
+            logical_name,
+            attribute_id,
+        }
     }
 }
 
@@ -24,7 +28,11 @@ pub struct CosemMethod {
 
 impl CosemMethod {
     pub fn new(class_id: u16, logical_name: crate::ObisCode, method_id: u8) -> Self {
-        Self { class_id, logical_name, method_id }
+        Self {
+            class_id,
+            logical_name,
+            method_id,
+        }
     }
 }
 

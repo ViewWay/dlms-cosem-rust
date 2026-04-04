@@ -1,24 +1,36 @@
-//! IC005 Demand Register
+//! IC010 Demand Register (IC10)
+//!
+//! Attributes:
+//! 1: logical_name (octet-string)
+//! 2: current_value (any)
+//! 3: scaler_unit (structure: scaler enum, unit enum)
+//! 4: status (double-long-unsigned)
+//! 5: capture_time (octet-string / date-time)
+//! 6: period (double-long-unsigned)
+//! 7: number_of_periods (unsigned)
 
 use dlms_core::{CosemObject, CosemObjectError, DlmsData, ObisCode};
 
-pub struct DemandRegister {
+pub struct Demand {
     logical_name: ObisCode,
     current_value: DlmsData,
     unit: u8,
     scaler: i8,
-    period: u16,
-    #[allow(dead_code)]
+    status: u32,
+    capture_time: DlmsData,
+    period: u32,
     number_of_periods: u8,
 }
 
-impl DemandRegister {
+impl Demand {
     pub fn new(logical_name: ObisCode, value: DlmsData) -> Self {
         Self {
             logical_name,
             current_value: value,
             unit: 0,
             scaler: 0,
+            status: 0,
+            capture_time: DlmsData::DateTime([0u8; 12]),
             period: 60,
             number_of_periods: 1,
         }
@@ -30,11 +42,14 @@ impl DemandRegister {
     pub fn set_value(&mut self, value: DlmsData) {
         self.current_value = value;
     }
+    pub fn period(&self) -> u32 {
+        self.period
+    }
 }
 
-impl CosemObject for DemandRegister {
+impl CosemObject for Demand {
     fn class_id(&self) -> u16 {
-        5
+        10
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -60,7 +75,14 @@ impl CosemObject for DemandRegister {
                 DlmsData::Enum(self.unit),
             ]))),
             4 => Some(dlms_axdr::encode(&DlmsData::DoubleLongUnsigned(
-                self.period as u32,
+                self.status,
+            ))),
+            5 => Some(dlms_axdr::encode(&self.capture_time)),
+            6 => Some(dlms_axdr::encode(&DlmsData::DoubleLongUnsigned(
+                self.period,
+            ))),
+            7 => Some(dlms_axdr::encode(&DlmsData::Unsigned(
+                self.number_of_periods,
             ))),
             _ => None,
         }
@@ -83,16 +105,35 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_demand_register_class_id() {
-        let r = DemandRegister::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(0));
-        assert_eq!(r.class_id(), 5);
+    fn test_demand_class_id() {
+        let d = Demand::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(100));
+        assert_eq!(d.class_id(), 10);
     }
 
     #[test]
-    fn test_demand_register_roundtrip() {
-        let mut r = DemandRegister::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(0));
-        let bytes = dlms_axdr::encode(&DlmsData::DoubleLong(555));
-        r.attribute_from_bytes(2, &bytes).unwrap();
-        assert_eq!(r.value().as_i32(), Some(555));
+    fn test_demand_attr_count() {
+        let d = Demand::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(0));
+        assert_eq!(d.attribute_count(), 7);
+    }
+
+    #[test]
+    fn test_demand_roundtrip() {
+        let mut d = Demand::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(0));
+        let bytes = dlms_axdr::encode(&DlmsData::DoubleLong(777));
+        d.attribute_from_bytes(2, &bytes).unwrap();
+        assert_eq!(d.value().as_i32(), Some(777));
+    }
+
+    #[test]
+    fn test_demand_period() {
+        let d = Demand::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(0));
+        assert_eq!(d.period(), 60);
+    }
+
+    #[test]
+    fn test_demand_attr6_encode() {
+        let d = Demand::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(0));
+        let bytes = d.attribute_to_bytes(6).unwrap();
+        assert!(!bytes.is_empty());
     }
 }

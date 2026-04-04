@@ -65,7 +65,10 @@ impl HlsContext {
     }
 
     /// Process server challenge response
-    pub fn process_server_challenge(&mut self, server_challenge: &[u8; 8]) -> Result<HlsAuthResult, SecurityError> {
+    pub fn process_server_challenge(
+        &mut self,
+        server_challenge: &[u8; 8],
+    ) -> Result<HlsAuthResult, SecurityError> {
         self.server_challenge = Some(*server_challenge);
 
         if let Some(key) = self.key {

@@ -73,24 +73,36 @@ impl TcpTransport {
         }
     }
 
-    pub fn address(&self) -> &str { &self.address }
+    pub fn address(&self) -> &str {
+        &self.address
+    }
 }
 
 impl Transport for TcpTransport {
     fn connect(&mut self) -> Result<(), TransportError> {
-        let addr = self.address.parse::<std::net::SocketAddr>()
+        let addr = self
+            .address
+            .parse::<std::net::SocketAddr>()
             .map_err(|e| TransportError::ConnectionFailed(e.to_string()))?;
-        let stream = std::net::TcpStream::connect_timeout(&addr, self.timeout.unwrap_or(std::time::Duration::from_secs(5)))
-            .map_err(|e| TransportError::ConnectionFailed(e.to_string()))?;
-        stream.set_read_timeout(self.timeout).map_err(|e| TransportError::IoError(e.to_string()))?;
-        stream.set_write_timeout(self.timeout).map_err(|e| TransportError::IoError(e.to_string()))?;
+        let stream = std::net::TcpStream::connect_timeout(
+            &addr,
+            self.timeout.unwrap_or(std::time::Duration::from_secs(5)),
+        )
+        .map_err(|e| TransportError::ConnectionFailed(e.to_string()))?;
+        stream
+            .set_read_timeout(self.timeout)
+            .map_err(|e| TransportError::IoError(e.to_string()))?;
+        stream
+            .set_write_timeout(self.timeout)
+            .map_err(|e| TransportError::IoError(e.to_string()))?;
         self.stream = Some(stream);
         Ok(())
     }
 
     fn send(&mut self, data: &[u8]) -> Result<(), TransportError> {
         let stream = self.stream.as_mut().ok_or(TransportError::NotConnected)?;
-        std::io::Write::write_all(stream, data).map_err(|e| TransportError::SendFailed(e.to_string()))
+        std::io::Write::write_all(stream, data)
+            .map_err(|e| TransportError::SendFailed(e.to_string()))
     }
 
     fn recv(&mut self, buf: &mut [u8]) -> Result<usize, TransportError> {
@@ -109,7 +121,9 @@ impl Transport for TcpTransport {
         Ok(())
     }
 
-    fn is_connected(&self) -> bool { self.stream.is_some() }
+    fn is_connected(&self) -> bool {
+        self.stream.is_some()
+    }
 }
 
 /// UDP Transport implementation
@@ -121,7 +135,11 @@ pub struct UdpTransport {
 
 impl UdpTransport {
     pub fn new(address: &str) -> Self {
-        Self { address: address.to_string(), socket: None, timeout: Some(std::time::Duration::from_secs(5)) }
+        Self {
+            address: address.to_string(),
+            socket: None,
+            timeout: Some(std::time::Duration::from_secs(5)),
+        }
     }
 }
 
@@ -129,26 +147,39 @@ impl Transport for UdpTransport {
     fn connect(&mut self) -> Result<(), TransportError> {
         let socket = std::net::UdpSocket::bind("0.0.0.0:0")
             .map_err(|e| TransportError::ConnectionFailed(e.to_string()))?;
-        socket.set_read_timeout(self.timeout).map_err(|e| TransportError::IoError(e.to_string()))?;
+        socket
+            .set_read_timeout(self.timeout)
+            .map_err(|e| TransportError::IoError(e.to_string()))?;
         self.socket = Some(socket);
         Ok(())
     }
 
     fn send(&mut self, data: &[u8]) -> Result<(), TransportError> {
         let socket = self.socket.as_ref().ok_or(TransportError::NotConnected)?;
-        let addr = self.address.parse::<std::net::SocketAddr>()
+        let addr = self
+            .address
+            .parse::<std::net::SocketAddr>()
             .map_err(|e| TransportError::SendFailed(e.to_string()))?;
-        socket.send_to(data, addr).map_err(|e| TransportError::SendFailed(e.to_string()))?;
+        socket
+            .send_to(data, addr)
+            .map_err(|e| TransportError::SendFailed(e.to_string()))?;
         Ok(())
     }
 
     fn recv(&mut self, buf: &mut [u8]) -> Result<usize, TransportError> {
         let socket = self.socket.as_ref().ok_or(TransportError::NotConnected)?;
-        socket.recv(buf).map_err(|e| TransportError::RecvFailed(e.to_string()))
+        socket
+            .recv(buf)
+            .map_err(|e| TransportError::RecvFailed(e.to_string()))
     }
 
-    fn close(&mut self) -> Result<(), TransportError> { self.socket = None; Ok(()) }
-    fn is_connected(&self) -> bool { self.socket.is_some() }
+    fn close(&mut self) -> Result<(), TransportError> {
+        self.socket = None;
+        Ok(())
+    }
+    fn is_connected(&self) -> bool {
+        self.socket.is_some()
+    }
 }
 
 #[cfg(test)]
@@ -171,14 +202,20 @@ mod tests {
     #[test]
     fn test_tcp_transport_send_not_connected() {
         let mut t = TcpTransport::new("127.0.0.1:4059");
-        assert!(matches!(t.send(&[1, 2, 3]), Err(TransportError::NotConnected)));
+        assert!(matches!(
+            t.send(&[1, 2, 3]),
+            Err(TransportError::NotConnected)
+        ));
     }
 
     #[test]
     fn test_tcp_transport_recv_not_connected() {
         let mut t = TcpTransport::new("127.0.0.1:4059");
         let mut buf = [0u8; 16];
-        assert!(matches!(t.recv(&mut buf), Err(TransportError::NotConnected)));
+        assert!(matches!(
+            t.recv(&mut buf),
+            Err(TransportError::NotConnected)
+        ));
     }
 
     #[test]
@@ -196,7 +233,10 @@ mod tests {
     #[test]
     fn test_udp_transport_send_not_connected() {
         let mut t = UdpTransport::new("127.0.0.1:4059");
-        assert!(matches!(t.send(&[1, 2, 3]), Err(TransportError::NotConnected)));
+        assert!(matches!(
+            t.send(&[1, 2, 3]),
+            Err(TransportError::NotConnected)
+        ));
     }
 
     #[test]

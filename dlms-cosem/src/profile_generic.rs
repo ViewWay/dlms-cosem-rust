@@ -1,6 +1,6 @@
 //! IC007 Profile Generic (Load Profile)
 
-use dlms_core::{CosemObject, ObisCode, DlmsData, CosemObjectError};
+use dlms_core::{CosemObject, CosemObjectError, DlmsData, ObisCode};
 
 /// Capture object in profile
 #[derive(Debug, Clone)]
@@ -17,7 +17,8 @@ pub struct ProfileGeneric {
     capture_objects: Vec<CaptureObject>,
     period: u16,
     entries: Vec<Vec<DlmsData>>,
-    #[allow(dead_code)] sort_method: u8,
+    #[allow(dead_code)]
+    sort_method: u8,
 }
 
 impl ProfileGeneric {
@@ -27,13 +28,17 @@ impl ProfileGeneric {
             capture_objects: Vec::new(),
             period: 60,
             entries: Vec::new(),
-            #[allow(dead_code)] sort_method: 0,
+            #[allow(dead_code)]
+            sort_method: 0,
         }
     }
 
     pub fn add_capture_object(&mut self, class_id: u16, ln: ObisCode, attr_idx: u8, data_idx: u8) {
         self.capture_objects.push(CaptureObject {
-            class_id, logical_name: ln, attribute_index: attr_idx, data_index: data_idx,
+            class_id,
+            logical_name: ln,
+            attribute_index: attr_idx,
+            data_index: data_idx,
         });
     }
 
@@ -41,42 +46,66 @@ impl ProfileGeneric {
         self.entries.push(entry);
     }
 
-    pub fn entry_count(&self) -> usize { self.entries.len() }
-    pub fn capture_object_count(&self) -> usize { self.capture_objects.len() }
+    pub fn entry_count(&self) -> usize {
+        self.entries.len()
+    }
+    pub fn capture_object_count(&self) -> usize {
+        self.capture_objects.len()
+    }
 }
 
 impl CosemObject for ProfileGeneric {
-    fn class_id(&self) -> u16 { 7 }
-    fn logical_name(&self) -> ObisCode { self.logical_name }
-    fn attribute_count(&self) -> u8 { 7 }
-    fn method_count(&self) -> u8 { 2 }
+    fn class_id(&self) -> u16 {
+        7
+    }
+    fn logical_name(&self) -> ObisCode {
+        self.logical_name
+    }
+    fn attribute_count(&self) -> u8 {
+        7
+    }
+    fn method_count(&self) -> u8 {
+        2
+    }
 
     fn attribute_to_bytes(&self, attr: u8) -> Option<Vec<u8>> {
         match attr {
             1 => {
                 let name = self.logical_name.to_bytes();
-                Some(vec![0x09, 0x06, name[0], name[1], name[2], name[3], name[4], name[5]])
+                Some(vec![
+                    0x09, 0x06, name[0], name[1], name[2], name[3], name[4], name[5],
+                ])
             }
             2 => {
                 // Buffer: array of structures
                 Some(dlms_axdr::encode(&DlmsData::Array(
-                    self.entries.iter().map(|e| DlmsData::Structure(e.clone())).collect()
+                    self.entries
+                        .iter()
+                        .map(|e| DlmsData::Structure(e.clone()))
+                        .collect(),
                 )))
             }
             3 => Some(dlms_axdr::encode(&DlmsData::Structure(vec![
                 DlmsData::Array(
-                    self.capture_objects.iter().map(|co| {
-                        DlmsData::Structure(vec![
-                            DlmsData::LongUnsigned(co.class_id),
-                            DlmsData::OctetString(co.logical_name.to_bytes().to_vec()),
-                            DlmsData::Integer(co.attribute_index as i8),
-                            DlmsData::Unsigned(co.data_index),
-                        ])
-                    }).collect()
+                    self.capture_objects
+                        .iter()
+                        .map(|co| {
+                            DlmsData::Structure(vec![
+                                DlmsData::LongUnsigned(co.class_id),
+                                DlmsData::OctetString(co.logical_name.to_bytes().to_vec()),
+                                DlmsData::Integer(co.attribute_index as i8),
+                                DlmsData::Unsigned(co.data_index),
+                            ])
+                        })
+                        .collect(),
                 ),
             ]))),
-            4 => Some(dlms_axdr::encode(&DlmsData::LongUnsigned(self.entries.len() as u16))),
-            5 => Some(dlms_axdr::encode(&DlmsData::LongUnsigned(self.period as u16))),
+            4 => Some(dlms_axdr::encode(&DlmsData::LongUnsigned(
+                self.entries.len() as u16,
+            ))),
+            5 => Some(dlms_axdr::encode(&DlmsData::LongUnsigned(
+                self.period as u16,
+            ))),
             _ => None,
         }
     }
