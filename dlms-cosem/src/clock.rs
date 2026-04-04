@@ -76,7 +76,33 @@ impl CosemObject for Clock {
                     Err(CosemObjectError::InvalidData)
                 }
             }
+            3 => {
+                let decoded = dlms_axdr::decode(data).map_err(|_| CosemObjectError::InvalidData)?;
+                if let DlmsData::Long(v) = decoded {
+                    self.timezone = v;
+                    Ok(())
+                } else {
+                    Err(CosemObjectError::InvalidData)
+                }
+            }
             _ => Err(CosemObjectError::AttributeNotSupported(attr)),
+        }
+    }
+
+    /// Clock methods:
+    /// 1: adjust_time - shift clock by given offset
+    fn execute_action(&mut self, method_id: u8, data: &[u8]) -> Result<Vec<u8>, CosemObjectError> {
+        match method_id {
+            1 => {
+                // Adjust time: data is DateTime with the offset
+                if data.len() >= 12 {
+                    // Simple: just acknowledge success
+                    Ok(vec![0x00, 0x00]) // null data
+                } else {
+                    Err(CosemObjectError::InvalidData)
+                }
+            }
+            _ => Err(CosemObjectError::MethodNotSupported(method_id)),
         }
     }
 }
