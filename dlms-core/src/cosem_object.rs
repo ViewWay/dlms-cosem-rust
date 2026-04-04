@@ -22,6 +22,16 @@ pub trait CosemObject {
 
     /// Deserialize data for a given attribute
     fn attribute_from_bytes(&mut self, attr: u8, data: &[u8]) -> Result<(), CosemObjectError>;
+
+    /// Execute an action (method) on this object.
+    /// Default implementation returns MethodNotSupported.
+    fn execute_action(
+        &mut self,
+        _method_id: u8,
+        _data: &[u8],
+    ) -> Result<Vec<u8>, CosemObjectError> {
+        Err(CosemObjectError::MethodNotSupported(0))
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

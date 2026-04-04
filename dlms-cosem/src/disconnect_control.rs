@@ -98,6 +98,29 @@ impl CosemObject for DisconnectControl {
             _ => Err(CosemObjectError::AttributeNotSupported(attr)),
         }
     }
+
+    fn execute_action(&mut self, method_id: u8, _data: &[u8]) -> Result<Vec<u8>, CosemObjectError> {
+        match method_id {
+            1 => {
+                // Disconnect
+                self.control_state = DisconnectState::Disconnected;
+                self.output_state = DisconnectState::Disconnected;
+                Ok(vec![0x00, 0x00])
+            }
+            2 => {
+                // Reconnect
+                self.control_state = DisconnectState::Connected;
+                self.output_state = DisconnectState::Connected;
+                Ok(vec![0x00, 0x00])
+            }
+            3 => {
+                // Arm
+                self.control_state = DisconnectState::Armed;
+                Ok(vec![0x00, 0x00])
+            }
+            _ => Err(CosemObjectError::MethodNotSupported(method_id)),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -128,5 +151,21 @@ mod tests {
         let bytes = dlms_axdr::encode(&DlmsData::Enum(0)); // Disconnected
         dc.attribute_from_bytes(2, &bytes).unwrap();
         assert_eq!(dc.control_state(), DisconnectState::Disconnected);
+    }
+
+    #[test]
+    fn test_disconnect_control_action_disconnect() {
+        let mut dc = DisconnectControl::new(ObisCode::new(0, 0, 96, 1, 0, 255));
+        let result = dc.execute_action(1, &[]).unwrap();
+        assert_eq!(dc.control_state(), DisconnectState::Disconnected);
+        assert_eq!(dc.output_state(), DisconnectState::Disconnected);
+    }
+
+    #[test]
+    fn test_disconnect_control_action_reconnect() {
+        let mut dc = DisconnectControl::new(ObisCode::new(0, 0, 96, 1, 0, 255));
+        dc.execute_action(1, &[]).unwrap(); // disconnect first
+        dc.execute_action(2, &[]).unwrap(); // reconnect
+        assert_eq!(dc.control_state(), DisconnectState::Connected);
     }
 }

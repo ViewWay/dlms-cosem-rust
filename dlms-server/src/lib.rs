@@ -138,6 +138,10 @@ impl DlmsServer {
                 // SET-Request
                 self.handle_set_request(&frame_info[1..])
             }
+            0x07 => {
+                // ACTION-Request
+                self.handle_action_request(&frame_info[1..])
+            }
             _ => Err(ServerError::UnsupportedService),
         }
     }
@@ -166,8 +170,82 @@ impl DlmsServer {
         Ok(response)
     }
 
-    fn handle_set_request(&mut self, _data: &[u8]) -> Result<Vec<u8>, ServerError> {
-        Err(ServerError::UnsupportedService)
+    fn handle_set_request(&mut self, data: &[u8]) -> Result<Vec<u8>, ServerError> {
+        // SET-Request format: invoke_id | CosemAttributeDescriptor | value
+        if data.len() < 11 {
+            return Err(ServerError::InvalidRequest);
+        }
+        // invoke_id is at data[0..1], CosemAttributeDescriptor starts at data[1]
+        let descriptor = &data[1..];
+        if descriptor.len() < 10 {
+            return Err(ServerError::InvalidRequest);
+        }
+        // Structure: 02 len 12 class_id(2) 09 06 ln(6) attr(1)
+        let class_id = u16::from_be_bytes([descriptor[3], descriptor[4]]);
+        let mut ln = [0u8; 6];
+        ln.copy_from_slice(&descriptor[7..13]);
+        let attribute_id = descriptor[13];
+        let obis = ObisCode::from_bytes(ln);
+
+        // Value data follows the descriptor
+        let value_data = if descriptor.len() > 14 {
+            &descriptor[14..]
+        } else {
+            &[]
+        };
+
+        let result = self.handle_set(class_id, &obis, attribute_id, value_data)?;
+
+        // Build SET-Response
+        let mut response = Vec::new();
+        response.push(0x08); // SET-Response
+        response.push(data[0]); // invoke_id
+        match result {
+            AccessResult::Success => response.push(0x01),
+            _ => response.push(0x02), // permanent-failure
+        }
+        Ok(response)
+    }
+
+    /// Handle an ACTION request
+    pub fn handle_action(
+        &mut self,
+        class_id: u16,
+        logical_name: &ObisCode,
+        method_id: u8,
+        data: &[u8],
+    ) -> Result<Vec<u8>, ServerError> {
+        let object = self
+            .get_object_mut(class_id, logical_name)
+            .ok_or(ServerError::ObjectNotFound)?;
+
+        object
+            .execute_action(method_id, data)
+            .map_err(|_| ServerError::MethodNotSupported)
+    }
+
+    fn handle_action_request(&mut self, data: &[u8]) -> Result<Vec<u8>, ServerError> {
+        if data.len() < 12 {
+            return Err(ServerError::InvalidRequest);
+        }
+        // invoke_id at data[0]
+        // CosemMethodDescriptor: 02 len 12 class_id(2) 09 06 ln(6) method_id(1)
+        let class_id = u16::from_be_bytes([data[4], data[5]]);
+        let mut ln = [0u8; 6];
+        ln.copy_from_slice(&data[8..14]);
+        let method_id = data[14];
+        let obis = ObisCode::from_bytes(ln);
+
+        let action_data = if data.len() > 15 { &data[15..] } else { &[] };
+        let result_data = self.handle_action(class_id, &obis, method_id, action_data)?;
+
+        // Build ACTION-Response
+        let mut response = Vec::new();
+        response.push(0x08); // ACTION-Response
+        response.push(data[0]); // invoke_id
+        response.push(0x01); // result = success
+        response.extend_from_slice(&result_data);
+        Ok(response)
     }
 
     /// Object count
@@ -284,5 +362,26 @@ mod tests {
         let data = dlms_axdr::encode(&DlmsData::DoubleLong(42));
         let result = server.handle_set(3, &ObisCode::ACTIVE_POWER_L1, 2, &data);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_server_handle_action_disconnect() {
+        use dlms_cosem::DisconnectControl;
+        let mut server = DlmsServer::new(ServerConfig::default());
+        server.register_object(Box::new(DisconnectControl::new(ObisCode::new(
+            0, 0, 96, 1, 0, 255,
+        ))));
+        let result = server.handle_action(70, &ObisCode::new(0, 0, 96, 1, 0, 255), 1, &[]);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_server_handle_action_clock() {
+        let mut server = DlmsServer::new(ServerConfig::default());
+        server.register_object(Box::new(Clock::new(ObisCode::CLOCK)));
+        let result = server.handle_action(8, &ObisCode::CLOCK, 1, &[]);
+        // Clock action 1 needs data, so should fail or handle gracefully
+        // With empty data it should return an error
+        assert!(result.is_err());
     }
 }
