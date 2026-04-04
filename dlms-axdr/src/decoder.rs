@@ -1,9 +1,9 @@
 //! AXDR decoder
 
-use std::vec::Vec;
-use std::string::String;
-use dlms_core::DlmsData;
 use super::{decode_length, AxdrError};
+use dlms_core::DlmsData;
+use std::string::String;
+use std::vec::Vec;
 
 pub struct AxdrDecoder<'a> {
     data: &'a [u8],
@@ -95,7 +95,10 @@ impl<'a> AxdrDecoder<'a> {
         }
         let unused_bits = self.read_u8()?;
         let data = self.read_bytes(len - 1)?;
-        Ok(DlmsData::BitString { unused_bits, data: data.to_vec() })
+        Ok(DlmsData::BitString {
+            unused_bits,
+            data: data.to_vec(),
+        })
     }
 
     fn decode_integer(&mut self) -> Result<DlmsData, AxdrError> {
@@ -135,7 +138,9 @@ impl<'a> AxdrDecoder<'a> {
             return Err(AxdrError::InvalidLength);
         }
         let bytes = self.read_bytes(2)?;
-        Ok(DlmsData::LongUnsigned(u16::from_be_bytes([bytes[0], bytes[1]])))
+        Ok(DlmsData::LongUnsigned(u16::from_be_bytes([
+            bytes[0], bytes[1],
+        ])))
     }
 
     fn decode_double_long(&mut self) -> Result<DlmsData, AxdrError> {
@@ -144,7 +149,9 @@ impl<'a> AxdrDecoder<'a> {
             return Err(AxdrError::InvalidLength);
         }
         let bytes = self.read_bytes(4)?;
-        Ok(DlmsData::DoubleLong(i32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]])))
+        Ok(DlmsData::DoubleLong(i32::from_be_bytes([
+            bytes[0], bytes[1], bytes[2], bytes[3],
+        ])))
     }
 
     fn decode_double_long_unsigned(&mut self) -> Result<DlmsData, AxdrError> {
@@ -153,7 +160,9 @@ impl<'a> AxdrDecoder<'a> {
             return Err(AxdrError::InvalidLength);
         }
         let bytes = self.read_bytes(4)?;
-        Ok(DlmsData::DoubleLongUnsigned(u32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]])))
+        Ok(DlmsData::DoubleLongUnsigned(u32::from_be_bytes([
+            bytes[0], bytes[1], bytes[2], bytes[3],
+        ])))
     }
 
     fn decode_long64(&mut self) -> Result<DlmsData, AxdrError> {
@@ -205,7 +214,9 @@ impl<'a> AxdrDecoder<'a> {
     fn decode_visible_string(&mut self) -> Result<DlmsData, AxdrError> {
         let len = self.read_length()?;
         let bytes = self.read_bytes(len)?;
-        Ok(DlmsData::VisibleString(String::from_utf8_lossy(bytes).into()))
+        Ok(DlmsData::VisibleString(
+            String::from_utf8_lossy(bytes).into(),
+        ))
     }
 
     fn decode_utf8_string(&mut self) -> Result<DlmsData, AxdrError> {

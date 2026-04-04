@@ -3,8 +3,8 @@
 // no_std support
 use std::vec::Vec;
 
-use crate::{crc16_hdlc, HDLC_FLAG, HDLC_MAX_FRAME_SIZE, HdlcError, HdlcFrame};
 use crate::frame::{AddressField, ControlField};
+use crate::{crc16_hdlc, HdlcError, HdlcFrame, HDLC_FLAG, HDLC_MAX_FRAME_SIZE};
 
 /// Parser state machine
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -115,7 +115,11 @@ impl HdlcParser {
             Vec::new()
         };
 
-        Ok(HdlcFrame { address, control, info })
+        Ok(HdlcFrame {
+            address,
+            control,
+            info,
+        })
     }
 }
 

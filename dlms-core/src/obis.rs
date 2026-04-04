@@ -20,7 +20,14 @@ impl ObisCode {
     }
 
     pub fn from_bytes(bytes: [u8; 6]) -> Self {
-        Self { a: bytes[0], b: bytes[1], c: bytes[2], d: bytes[3], e: bytes[4], f: bytes[5] }
+        Self {
+            a: bytes[0],
+            b: bytes[1],
+            c: bytes[2],
+            d: bytes[3],
+            e: bytes[4],
+            f: bytes[5],
+        }
     }
 
     pub fn to_bytes(&self) -> [u8; 6] {
@@ -40,13 +47,21 @@ impl ObisCode {
 
 impl fmt::Display for ObisCode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}.{}.{}.{}.{}.{}", self.a, self.b, self.c, self.d, self.e, self.f)
+        write!(
+            f,
+            "{}.{}.{}.{}.{}.{}",
+            self.a, self.b, self.c, self.d, self.e, self.f
+        )
     }
 }
 
 impl fmt::Debug for ObisCode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "ObisCode({}.{}.{}.{}.{}.{})", self.a, self.b, self.c, self.d, self.e, self.f)
+        write!(
+            f,
+            "ObisCode({}.{}.{}.{}.{}.{})",
+            self.a, self.b, self.c, self.d, self.e, self.f
+        )
     }
 }
 
@@ -58,12 +73,24 @@ impl core::str::FromStr for ObisCode {
         if parts.len() != 6 {
             return Err(ObisParseError::InvalidFormat);
         }
-        let a = parts[0].parse::<u8>().map_err(|_| ObisParseError::InvalidValue)?;
-        let b = parts[1].parse::<u8>().map_err(|_| ObisParseError::InvalidValue)?;
-        let c = parts[2].parse::<u8>().map_err(|_| ObisParseError::InvalidValue)?;
-        let d = parts[3].parse::<u8>().map_err(|_| ObisParseError::InvalidValue)?;
-        let e = parts[4].parse::<u8>().map_err(|_| ObisParseError::InvalidValue)?;
-        let f = parts[5].parse::<u8>().map_err(|_| ObisParseError::InvalidValue)?;
+        let a = parts[0]
+            .parse::<u8>()
+            .map_err(|_| ObisParseError::InvalidValue)?;
+        let b = parts[1]
+            .parse::<u8>()
+            .map_err(|_| ObisParseError::InvalidValue)?;
+        let c = parts[2]
+            .parse::<u8>()
+            .map_err(|_| ObisParseError::InvalidValue)?;
+        let d = parts[3]
+            .parse::<u8>()
+            .map_err(|_| ObisParseError::InvalidValue)?;
+        let e = parts[4]
+            .parse::<u8>()
+            .map_err(|_| ObisParseError::InvalidValue)?;
+        let f = parts[5]
+            .parse::<u8>()
+            .map_err(|_| ObisParseError::InvalidValue)?;
         Ok(Self::new(a, b, c, d, e, f))
     }
 }

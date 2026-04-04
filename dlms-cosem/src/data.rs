@@ -1,6 +1,6 @@
 //! IC001 Data - Generic data container
 
-use dlms_core::{CosemObject, ObisCode, DlmsData, CosemObjectError};
+use dlms_core::{CosemObject, CosemObjectError, DlmsData, ObisCode};
 
 /// IC001 Data - Generic COSEM data object
 pub struct Data {
@@ -10,7 +10,10 @@ pub struct Data {
 
 impl Data {
     pub fn new(logical_name: ObisCode, value: DlmsData) -> Self {
-        Self { logical_name, value }
+        Self {
+            logical_name,
+            value,
+        }
     }
 
     pub fn value(&self) -> &DlmsData {
@@ -23,10 +26,18 @@ impl Data {
 }
 
 impl CosemObject for Data {
-    fn class_id(&self) -> u16 { 1 }
-    fn logical_name(&self) -> ObisCode { self.logical_name }
-    fn attribute_count(&self) -> u8 { 2 }
-    fn method_count(&self) -> u8 { 0 }
+    fn class_id(&self) -> u16 {
+        1
+    }
+    fn logical_name(&self) -> ObisCode {
+        self.logical_name
+    }
+    fn attribute_count(&self) -> u8 {
+        2
+    }
+    fn method_count(&self) -> u8 {
+        0
+    }
 
     fn attribute_to_bytes(&self, attr: u8) -> Option<Vec<u8>> {
         match attr {

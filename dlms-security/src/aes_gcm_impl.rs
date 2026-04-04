@@ -15,8 +15,13 @@ pub fn aes128_gcm_encrypt(
     let cipher = Aes128Gcm::new_from_slice(key).map_err(|_| SecurityError::InvalidKey)?;
     let nonce = Nonce::from_slice(nonce);
 
-    let payload = aes_gcm::aead::Payload { msg: plaintext, aad };
-    let ciphertext = cipher.encrypt(nonce, payload).map_err(|_| SecurityError::EncryptionFailed)?;
+    let payload = aes_gcm::aead::Payload {
+        msg: plaintext,
+        aad,
+    };
+    let ciphertext = cipher
+        .encrypt(nonce, payload)
+        .map_err(|_| SecurityError::EncryptionFailed)?;
 
     if ciphertext.len() < 16 {
         return Err(SecurityError::EncryptionFailed);
@@ -46,8 +51,13 @@ pub fn aes128_gcm_decrypt(
     let mut full_ciphertext = ciphertext.to_vec();
     full_ciphertext.extend_from_slice(tag);
 
-    let payload = aes_gcm::aead::Payload { msg: &full_ciphertext, aad };
-    let plaintext = cipher.decrypt(nonce, payload).map_err(|_| SecurityError::DecryptionFailed)?;
+    let payload = aes_gcm::aead::Payload {
+        msg: &full_ciphertext,
+        aad,
+    };
+    let plaintext = cipher
+        .decrypt(nonce, payload)
+        .map_err(|_| SecurityError::DecryptionFailed)?;
 
     Ok(plaintext)
 }

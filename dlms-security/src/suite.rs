@@ -35,11 +35,20 @@ impl SecuritySuite {
     }
 
     pub fn needs_authentication(&self) -> bool {
-        matches!(self, SecuritySuite::Suite1 | SecuritySuite::Suite3 | SecuritySuite::Suite4 | SecuritySuite::Suite5)
+        matches!(
+            self,
+            SecuritySuite::Suite1
+                | SecuritySuite::Suite3
+                | SecuritySuite::Suite4
+                | SecuritySuite::Suite5
+        )
     }
 
     pub fn needs_encryption(&self) -> bool {
-        matches!(self, SecuritySuite::Suite2 | SecuritySuite::Suite3 | SecuritySuite::Suite5)
+        matches!(
+            self,
+            SecuritySuite::Suite2 | SecuritySuite::Suite3 | SecuritySuite::Suite5
+        )
     }
 
     pub fn needs_signing(&self) -> bool {

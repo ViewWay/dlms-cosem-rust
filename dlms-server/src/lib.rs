@@ -6,7 +6,7 @@
 //! - HDLC frame handling
 //! - Association handling
 
-use dlms_core::{CosemObject, ObisCode, DlmsData, AccessResult};
+use dlms_core::{AccessResult, CosemObject, DlmsData, ObisCode};
 use std::collections::HashMap;
 
 /// Server configuration
@@ -32,13 +32,17 @@ type ObjectKey = (u16, [u8; 6]);
 
 /// DLMS Server
 pub struct DlmsServer {
-    #[allow(dead_code)] config: ServerConfig,
+    #[allow(dead_code)]
+    config: ServerConfig,
     objects: HashMap<ObjectKey, Box<dyn CosemObject>>,
 }
 
 impl DlmsServer {
     pub fn new(config: ServerConfig) -> Self {
-        Self { config, objects: HashMap::new() }
+        Self {
+            config,
+            objects: HashMap::new(),
+        }
     }
 
     /// Register a COSEM object
@@ -54,28 +58,40 @@ impl DlmsServer {
     }
 
     /// Get a mutable reference to a registered object
-    pub fn get_object_mut(&mut self, class_id: u16, logical_name: &ObisCode) -> Option<&mut Box<dyn CosemObject>> {
+    pub fn get_object_mut(
+        &mut self,
+        class_id: u16,
+        logical_name: &ObisCode,
+    ) -> Option<&mut Box<dyn CosemObject>> {
         let key = (class_id, logical_name.to_bytes());
         self.objects.get_mut(&key)
     }
 
     /// List all registered objects
     pub fn list_objects(&self) -> Vec<(u16, ObisCode)> {
-        self.objects.values()
+        self.objects
+            .values()
             .map(|o| (o.class_id(), o.logical_name()))
             .collect()
     }
 
     /// Handle a GET request
-    pub fn handle_get(&self, class_id: u16, logical_name: &ObisCode, attribute_id: u8) -> Result<DlmsData, ServerError> {
-        let object = self.get_object(class_id, logical_name)
+    pub fn handle_get(
+        &self,
+        class_id: u16,
+        logical_name: &ObisCode,
+        attribute_id: u8,
+    ) -> Result<DlmsData, ServerError> {
+        let object = self
+            .get_object(class_id, logical_name)
             .ok_or(ServerError::ObjectNotFound)?;
 
         if attribute_id as usize > object.attribute_count() as usize {
             return Err(ServerError::AttributeNotSupported);
         }
 
-        let bytes = object.attribute_to_bytes(attribute_id)
+        let bytes = object
+            .attribute_to_bytes(attribute_id)
             .ok_or(ServerError::AttributeNotSupported)?;
 
         // Parse back to DlmsData
@@ -88,11 +104,19 @@ impl DlmsServer {
     }
 
     /// Handle a SET request
-    pub fn handle_set(&mut self, class_id: u16, logical_name: &ObisCode, attribute_id: u8, data: &[u8]) -> Result<AccessResult, ServerError> {
-        let object = self.get_object_mut(class_id, logical_name)
+    pub fn handle_set(
+        &mut self,
+        class_id: u16,
+        logical_name: &ObisCode,
+        attribute_id: u8,
+        data: &[u8],
+    ) -> Result<AccessResult, ServerError> {
+        let object = self
+            .get_object_mut(class_id, logical_name)
             .ok_or(ServerError::ObjectNotFound)?;
 
-        object.attribute_from_bytes(attribute_id, data)
+        object
+            .attribute_from_bytes(attribute_id, data)
             .map_err(|_| ServerError::WriteFailed)?;
 
         Ok(AccessResult::Success)
@@ -198,7 +222,10 @@ mod tests {
     fn test_server_register_and_list() {
         let mut server = DlmsServer::new(ServerConfig::default());
         server.register_object(Box::new(Clock::new(ObisCode::CLOCK)));
-        server.register_object(Box::new(Register::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(1000))));
+        server.register_object(Box::new(Register::new(
+            ObisCode::ACTIVE_POWER_L1,
+            DlmsData::DoubleLong(1000),
+        )));
         assert_eq!(server.object_count(), 2);
         let objects = server.list_objects();
         assert_eq!(objects.len(), 2);
@@ -250,7 +277,10 @@ mod tests {
     #[test]
     fn test_server_handle_set() {
         let mut server = DlmsServer::new(ServerConfig::default());
-        server.register_object(Box::new(Register::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(0))));
+        server.register_object(Box::new(Register::new(
+            ObisCode::ACTIVE_POWER_L1,
+            DlmsData::DoubleLong(0),
+        )));
         let data = dlms_axdr::encode(&DlmsData::DoubleLong(42));
         let result = server.handle_set(3, &ObisCode::ACTIVE_POWER_L1, 2, &data);
         assert!(result.is_ok());

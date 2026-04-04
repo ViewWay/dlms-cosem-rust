@@ -6,17 +6,16 @@
 
 // no_std support: feature gate for no_std
 
-
-use std::vec::Vec;
 use dlms_core::DlmsData;
+use std::vec::Vec;
 
-mod encoder;
 mod decoder;
+mod encoder;
 mod length;
 
-pub use encoder::AxdvEncoder;
 pub use decoder::AxdrDecoder;
-pub use length::{encode_length, decode_length};
+pub use encoder::AxdvEncoder;
+pub use length::{decode_length, encode_length};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AxdrError {
@@ -83,8 +82,14 @@ mod tests {
 
     #[test]
     fn test_decode_boolean() {
-        assert_eq!(decode(&[0x03, 0x01, 0x01]).unwrap(), DlmsData::Boolean(true));
-        assert_eq!(decode(&[0x03, 0x01, 0x00]).unwrap(), DlmsData::Boolean(false));
+        assert_eq!(
+            decode(&[0x03, 0x01, 0x01]).unwrap(),
+            DlmsData::Boolean(true)
+        );
+        assert_eq!(
+            decode(&[0x03, 0x01, 0x00]).unwrap(),
+            DlmsData::Boolean(false)
+        );
     }
 
     #[test]
@@ -130,7 +135,10 @@ mod tests {
 
     #[test]
     fn test_decode_long() {
-        assert_eq!(decode(&[0x10, 0x02, 0x03, 0xE8]).unwrap(), DlmsData::Long(1000));
+        assert_eq!(
+            decode(&[0x10, 0x02, 0x03, 0xE8]).unwrap(),
+            DlmsData::Long(1000)
+        );
     }
 
     #[test]
@@ -142,7 +150,10 @@ mod tests {
 
     #[test]
     fn test_decode_long_unsigned() {
-        assert_eq!(decode(&[0x12, 0x02, 0xEA, 0x60]).unwrap(), DlmsData::LongUnsigned(60000));
+        assert_eq!(
+            decode(&[0x12, 0x02, 0xEA, 0x60]).unwrap(),
+            DlmsData::LongUnsigned(60000)
+        );
     }
 
     #[test]
@@ -154,7 +165,10 @@ mod tests {
 
     #[test]
     fn test_decode_double_long() {
-        assert_eq!(decode(&[0x05, 0x04, 0x00, 0x01, 0x86, 0xA0]).unwrap(), DlmsData::DoubleLong(100000));
+        assert_eq!(
+            decode(&[0x05, 0x04, 0x00, 0x01, 0x86, 0xA0]).unwrap(),
+            DlmsData::DoubleLong(100000)
+        );
     }
 
     #[test]
@@ -196,7 +210,10 @@ mod tests {
 
     #[test]
     fn test_decode_empty_octet_string() {
-        assert_eq!(decode(&[0x09, 0x00]).unwrap(), DlmsData::OctetString(vec![]));
+        assert_eq!(
+            decode(&[0x09, 0x00]).unwrap(),
+            DlmsData::OctetString(vec![])
+        );
     }
 
     #[test]
@@ -232,7 +249,8 @@ mod tests {
             0x01, 0x02, // Array with 2 elements
             0x11, 0x01, 0x0A, // Unsigned(10)
             0x11, 0x01, 0x14, // Unsigned(20)
-        ]).unwrap();
+        ])
+        .unwrap();
         assert_eq!(data.as_array().unwrap().len(), 2);
     }
 
@@ -252,7 +270,8 @@ mod tests {
             0x02, 0x02, // Structure with 2 elements
             0x11, 0x01, 0x01, // Unsigned(1)
             0x0A, 0x04, b't', b'e', b's', b't', // VisibleString("test")
-        ]).unwrap();
+        ])
+        .unwrap();
         assert_eq!(data.as_structure().unwrap().len(), 2);
     }
 
@@ -342,7 +361,10 @@ mod tests {
 
     #[test]
     fn test_encode_bitstring() {
-        let data = DlmsData::BitString { unused_bits: 4, data: vec![0xF0] };
+        let data = DlmsData::BitString {
+            unused_bits: 4,
+            data: vec![0xF0],
+        };
         let bytes = encode(&data);
         assert_eq!(bytes[0], 0x04);
     }
@@ -350,12 +372,20 @@ mod tests {
     #[test]
     fn test_decode_bitstring() {
         let data = decode(&[0x04, 0x02, 0x04, 0xF0]).unwrap();
-        assert_eq!(data, DlmsData::BitString { unused_bits: 4, data: vec![0xF0] });
+        assert_eq!(
+            data,
+            DlmsData::BitString {
+                unused_bits: 4,
+                data: vec![0xF0]
+            }
+        );
     }
 
     #[test]
     fn test_encode_date_time() {
-        let data = DlmsData::DateTime([0x07, 0xE8, 0x06, 0x0F, 0x06, 0x0A, 0x1E, 0x2D, 0x32, 0x01, 0xE0, 0x00]);
+        let data = DlmsData::DateTime([
+            0x07, 0xE8, 0x06, 0x0F, 0x06, 0x0A, 0x1E, 0x2D, 0x32, 0x01, 0xE0, 0x00,
+        ]);
         let bytes = encode(&data);
         assert_eq!(bytes[0], 0x1A);
         assert_eq!(bytes[1], 0x0C);
@@ -363,7 +393,9 @@ mod tests {
 
     #[test]
     fn test_decode_date_time() {
-        let bytes = [0x1A, 0x0C, 0x07, 0xE8, 0x06, 0x0F, 0x06, 0x0A, 0x1E, 0x2D, 0x32, 0x01, 0xE0, 0x00];
+        let bytes = [
+            0x1A, 0x0C, 0x07, 0xE8, 0x06, 0x0F, 0x06, 0x0A, 0x1E, 0x2D, 0x32, 0x01, 0xE0, 0x00,
+        ];
         let data = decode(&bytes).unwrap();
         assert_eq!(data.tag(), 0x1A);
     }

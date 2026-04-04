@@ -3,16 +3,16 @@
 /// DLMS Date-Time as defined in IEC 62056-53
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CosemDateTime {
-    pub year: Option<u16>,    // 0 = not specified
-    pub month: Option<u8>,    // 0-12, 0 = not specified, 13-16 = dev spec
-    pub day: Option<u8>,      // 1-31, 0 = not specified
+    pub year: Option<u16>,       // 0 = not specified
+    pub month: Option<u8>,       // 0-12, 0 = not specified, 13-16 = dev spec
+    pub day: Option<u8>,         // 1-31, 0 = not specified
     pub day_of_week: Option<u8>, // 1-7 (Mon-Sun)
-    pub hour: Option<u8>,     // 0-23
-    pub minute: Option<u8>,   // 0-59
-    pub second: Option<u8>,   // 0-59
-    pub hundredths: Option<u8>, // 0-99
-    pub deviation: i16,       // deviation in minutes, -720 to +720
-    pub clock_status: u8,     // clock status bits
+    pub hour: Option<u8>,        // 0-23
+    pub minute: Option<u8>,      // 0-59
+    pub second: Option<u8>,      // 0-59
+    pub hundredths: Option<u8>,  // 0-99
+    pub deviation: i16,          // deviation in minutes, -720 to +720
+    pub clock_status: u8,        // clock status bits
 }
 
 impl Default for CosemDateTime {
@@ -106,13 +106,41 @@ impl CosemDateTime {
         let year = u16::from_be_bytes([bytes[0], bytes[1]]);
         Ok(Self {
             year: if year == 0xFFFF { None } else { Some(year) },
-            month: if bytes[2] == 0xFF { None } else { Some(bytes[2]) },
-            day: if bytes[3] == 0xFF { None } else { Some(bytes[3]) },
-            day_of_week: if bytes[4] == 0xFF { None } else { Some(bytes[4]) },
-            hour: if bytes[5] == 0xFF { None } else { Some(bytes[5]) },
-            minute: if bytes[6] == 0xFF { None } else { Some(bytes[6]) },
-            second: if bytes[7] == 0xFF { None } else { Some(bytes[7]) },
-            hundredths: if bytes[8] == 0xFF { None } else { Some(bytes[8]) },
+            month: if bytes[2] == 0xFF {
+                None
+            } else {
+                Some(bytes[2])
+            },
+            day: if bytes[3] == 0xFF {
+                None
+            } else {
+                Some(bytes[3])
+            },
+            day_of_week: if bytes[4] == 0xFF {
+                None
+            } else {
+                Some(bytes[4])
+            },
+            hour: if bytes[5] == 0xFF {
+                None
+            } else {
+                Some(bytes[5])
+            },
+            minute: if bytes[6] == 0xFF {
+                None
+            } else {
+                Some(bytes[6])
+            },
+            second: if bytes[7] == 0xFF {
+                None
+            } else {
+                Some(bytes[7])
+            },
+            hundredths: if bytes[8] == 0xFF {
+                None
+            } else {
+                Some(bytes[8])
+            },
             deviation: i16::from_be_bytes([bytes[9], bytes[10]]),
             clock_status: bytes[11],
         })

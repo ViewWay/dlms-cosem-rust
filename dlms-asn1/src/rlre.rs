@@ -1,7 +1,7 @@
 //! RLRE (Release Response) APDU
 
+use super::{Asn1Error, BerDecoder, BerEncoder};
 use std::vec::Vec;
-use super::{BerEncoder, BerDecoder, Asn1Error};
 
 /// RLRE APDU - Release Response
 #[derive(Debug, Clone, PartialEq, Eq)]

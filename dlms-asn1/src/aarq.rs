@@ -1,7 +1,7 @@
 //! AARQ (Association Request) APDU
 
+use super::{Asn1Error, BerDecoder, BerEncoder};
 use std::vec::Vec;
-use super::{BerEncoder, BerDecoder, Asn1Error};
 
 /// AARQ APDU - Association Request
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -28,7 +28,9 @@ impl AarqApdu {
 
         // Application context name (IMPLICIT [1])
         content.push(0xA1);
-        content.extend(BerEncoder::encode_length(self.application_context_name.len()));
+        content.extend(BerEncoder::encode_length(
+            self.application_context_name.len(),
+        ));
         content.extend(&self.application_context_name);
 
         // Called AP title (IMPLICIT [2]) - optional

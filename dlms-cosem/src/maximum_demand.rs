@@ -1,25 +1,41 @@
-//! IC004 Extended Register
+//! IC034 Maximum Demand (Register)
+//!
+//! Attributes:
+//! 1: logical_name (octet-string)
+//! 2: value (any)
+//! 3: scaler_unit (structure)
+//! 4: status (double-long-unsigned)
+//! 5: start_time_current (date-time)
+//! 6: capture_time (date-time)
+//! 7: period (double-long-unsigned)
+//! 8: number_of_periods (unsigned)
 
 use dlms_core::{CosemObject, CosemObjectError, DlmsData, ObisCode};
 
-pub struct ExtendedRegister {
+pub struct MaximumDemand {
     logical_name: ObisCode,
     value: DlmsData,
     unit: u8,
     scaler: i8,
-    status: DlmsData,
+    status: u32,
+    start_time_current: DlmsData,
     capture_time: DlmsData,
+    period: u32,
+    number_of_periods: u8,
 }
 
-impl ExtendedRegister {
+impl MaximumDemand {
     pub fn new(logical_name: ObisCode, value: DlmsData) -> Self {
         Self {
             logical_name,
             value,
             unit: 0,
             scaler: 0,
-            status: DlmsData::DoubleLongUnsigned(0),
+            status: 0,
+            start_time_current: DlmsData::DateTime([0u8; 12]),
             capture_time: DlmsData::DateTime([0u8; 12]),
+            period: 60,
+            number_of_periods: 1,
         }
     }
 
@@ -31,15 +47,15 @@ impl ExtendedRegister {
     }
 }
 
-impl CosemObject for ExtendedRegister {
+impl CosemObject for MaximumDemand {
     fn class_id(&self) -> u16 {
-        4
+        34
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
     }
     fn attribute_count(&self) -> u8 {
-        5
+        8
     }
     fn method_count(&self) -> u8 {
         0
@@ -58,8 +74,17 @@ impl CosemObject for ExtendedRegister {
                 DlmsData::Enum(self.scaler as u8),
                 DlmsData::Enum(self.unit),
             ]))),
-            4 => Some(dlms_axdr::encode(&self.status)),
-            5 => Some(dlms_axdr::encode(&self.capture_time)),
+            4 => Some(dlms_axdr::encode(&DlmsData::DoubleLongUnsigned(
+                self.status,
+            ))),
+            5 => Some(dlms_axdr::encode(&self.start_time_current)),
+            6 => Some(dlms_axdr::encode(&self.capture_time)),
+            7 => Some(dlms_axdr::encode(&DlmsData::DoubleLongUnsigned(
+                self.period,
+            ))),
+            8 => Some(dlms_axdr::encode(&DlmsData::Unsigned(
+                self.number_of_periods,
+            ))),
             _ => None,
         }
     }
@@ -80,22 +105,22 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_extended_register_class_id() {
-        let r = ExtendedRegister::new(ObisCode::ACTIVE_ENERGY_IMPORT, DlmsData::DoubleLong(0));
-        assert_eq!(r.class_id(), 4);
+    fn test_max_demand_class_id() {
+        let m = MaximumDemand::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(0));
+        assert_eq!(m.class_id(), 34);
     }
 
     #[test]
-    fn test_extended_register_attr_count() {
-        let r = ExtendedRegister::new(ObisCode::ACTIVE_ENERGY_IMPORT, DlmsData::DoubleLong(0));
-        assert_eq!(r.attribute_count(), 5);
+    fn test_max_demand_roundtrip() {
+        let mut m = MaximumDemand::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(0));
+        let bytes = dlms_axdr::encode(&DlmsData::DoubleLong(9999));
+        m.attribute_from_bytes(2, &bytes).unwrap();
+        assert_eq!(m.value().as_i32(), Some(9999));
     }
 
     #[test]
-    fn test_extended_register_roundtrip() {
-        let mut r = ExtendedRegister::new(ObisCode::ACTIVE_ENERGY_IMPORT, DlmsData::DoubleLong(0));
-        let bytes = dlms_axdr::encode(&DlmsData::DoubleLong(999));
-        r.attribute_from_bytes(2, &bytes).unwrap();
-        assert_eq!(r.value().as_i32(), Some(999));
+    fn test_max_demand_attr_count() {
+        let m = MaximumDemand::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(0));
+        assert_eq!(m.attribute_count(), 8);
     }
 }
