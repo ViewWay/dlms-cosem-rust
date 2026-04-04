@@ -11,6 +11,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+mod activity_calendar;
 mod billing;
 mod clock;
 mod data;
@@ -19,12 +20,14 @@ mod demand;
 mod demand_register;
 mod disconnect_control;
 mod extended_register;
+mod image_transfer;
 mod infrared_setup;
 mod lorawan_setup;
 mod lp_setup;
 mod maximum_demand;
 mod nbiot_setup;
 mod profile_generic;
+mod push_setup;
 mod register;
 mod rs485_setup;
 mod security_setup;
@@ -32,8 +35,10 @@ mod single_phase;
 mod special_day_table;
 mod tariff_plan;
 mod total;
+mod value_display;
 mod week_profile;
 
+pub use activity_calendar::ActivityCalendar;
 pub use billing::Billing;
 pub use clock::Clock;
 pub use data::Data;
@@ -42,12 +47,14 @@ pub use demand::Demand;
 pub use demand_register::DemandRegister;
 pub use disconnect_control::{DisconnectControl, DisconnectState};
 pub use extended_register::ExtendedRegister;
+pub use image_transfer::{ImageTransfer, ImageTransferStatus};
 pub use infrared_setup::InfraredSetup;
 pub use lorawan_setup::LorawanSetup;
 pub use lp_setup::LpSetup;
 pub use maximum_demand::MaximumDemand;
 pub use nbiot_setup::NbiotSetup;
 pub use profile_generic::ProfileGeneric;
+pub use push_setup::PushSetup;
 pub use register::Register;
 pub use rs485_setup::Rs485Setup;
 pub use security_setup::SecuritySetup;
@@ -55,6 +62,7 @@ pub use single_phase::SinglePhase;
 pub use special_day_table::SpecialDayTable;
 pub use tariff_plan::TariffPlan;
 pub use total::Total;
+pub use value_display::ValueDisplay;
 pub use week_profile::WeekProfile;
 
 /// COSEM Interface Class IDs
