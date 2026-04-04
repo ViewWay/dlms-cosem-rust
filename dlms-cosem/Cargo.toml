@@ -11,3 +11,6 @@ std = []
 [dependencies]
 dlms-core = { path = "../dlms-core" }
 dlms-axdr = { path = "../dlms-axdr" }
+
+[dev-dependencies]
+dlms-server = { path = "../dlms-server" }
