@@ -3,7 +3,8 @@
 //! Implements core IC (Interface Class) objects:
 //! - IC001 Data, IC003 Register, IC004 ExtendedRegister, IC005 DemandRegister
 //! - IC007 Profile Generic
-//! - IC008 Clock, IC010 Demand, IC011 SpecialDayTable
+//! - IC008 Clock, IC010 ScriptTable, IC011 SpecialDayTable
+//! - IC012 Schedule, IC022 Module, IC029 ValueTable
 //! - IC017 Billing, IC020 Total, IC031 Single Phase, IC034 Maximum Demand
 //! - IC018 TariffPlan, IC021 WeekProfile, IC022 DayProfile
 //! - IC070 DisconnectControl, SecuritySetup
@@ -62,6 +63,7 @@ mod load_profile_switch;
 mod local_display;
 mod lorawan_setup;
 mod lp_setup;
+mod module;
 mod mac_address_setup;
 mod maximum_demand;
 mod mbus_client;
@@ -89,6 +91,7 @@ mod rpl_diagnostic;
 mod rs485_setup;
 mod sap_assignment;
 mod scheduled_activity;
+mod schedule;
 mod security_setup;
 mod security_setup_bluebook;
 mod sensor;
@@ -96,6 +99,7 @@ mod sensor_manager;
 mod sensor_setup;
 mod serial_port;
 mod single_action_schedule;
+mod script_table;
 mod smtp_setup;
 mod standard_readout;
 mod single_phase;
@@ -115,6 +119,7 @@ mod transport;
 mod ups;
 mod utility_sub_schedule;
 mod value_display;
+mod value_table;
 mod water_flow;
 mod week_profile;
 mod wisun_diagnostic;
@@ -173,6 +178,7 @@ pub use load_profile_switch::UtilityTables;
 pub use local_display::LocalDisplay;
 pub use lorawan_setup::LorawanSetup;
 pub use lp_setup::LpSetup;
+pub use module::{Module, ModuleStatus};
 pub use mac_address_setup::MacAddressSetup;
 pub use maximum_demand::MaximumDemand;
 pub use mbus_client::MbusClient;
@@ -201,6 +207,7 @@ pub use rpl_diagnostic::RplDiagnostic;
 pub use rs485_setup::Rs485Setup;
 pub use sap_assignment::SapAssignment;
 pub use scheduled_activity::ScheduledActivity;
+pub use schedule::{Schedule, ScheduleEntry};
 pub use security_setup::SecuritySetup;
 pub use security_setup_bluebook::SecuritySetupBluebook;
 pub use sensor::Sensor;
@@ -208,6 +215,7 @@ pub use sensor_manager::{SensorEntry, SensorManager};
 pub use sensor_setup::SensorSetup;
 pub use serial_port::SerialPort;
 pub use single_action_schedule::{ActionScheduleEntry, SingleActionSchedule};
+pub use script_table::{Script, ScriptTable};
 pub use smtp_setup::SmtpSetup;
 pub use single_phase::SinglePhase;
 pub use single_phase_export::SinglePhaseExport;
@@ -226,6 +234,7 @@ pub use transport::Transport;
 pub use ups::Ups;
 pub use utility_sub_schedule::{SubScheduleEntry, UtilitySubSchedule};
 pub use value_display::ValueDisplay;
+pub use value_table::{ValueDescriptor, ValueEntry, ValueTable};
 pub use water_flow::WaterFlow;
 pub use week_profile::WeekProfile;
 pub use wisun_diagnostic::WiSunDiagnostic;
@@ -246,15 +255,18 @@ pub mod class_id {
     pub const ASSOCIATION_LN: u16 = 9;
     pub const DEMAND: u16 = 10;
     pub const SPECIAL_DAY_TABLE: u16 = 11;
+    pub const SCHEDULE: u16 = 12;
     pub const ACTIVITY_CALENDAR: u16 = 20;
     pub const REGISTER_MONITOR: u16 = 21;
     pub const SINGLE_ACTION_SCHEDULE: u16 = 22;
+    pub const MODULE: u16 = 22;
     pub const IEC_HDLC_SETUP: u16 = 23;
     pub const MBUS_SLAVE_PORT_SETUP: u16 = 25;
     pub const UTILITY_TABLES: u16 = 26;
     pub const MODEM_CONFIGURATION: u16 = 27;
     pub const ZIGBEE_SETUP: u16 = 27; // Same as MODEM_CONFIGURATION
     pub const AUTO_CONNECT: u16 = 29;
+    pub const VALUE_TABLE: u16 = 29;
     pub const COSEM_DATA_PROTECTION: u16 = 30;
     pub const IDENTITY: u16 = 40;
     pub const PUSH_SETUP: u16 = 40; // Same as IDENTITY
