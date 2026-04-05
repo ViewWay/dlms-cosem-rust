@@ -10,3 +10,7 @@ std = []
 
 [dependencies]
 dlms-core = { path = "../dlms-core" }
+
+[dev-dependencies]
+proptest.workspace = true
+dlms-core.workspace = true

@@ -415,11 +415,11 @@ mod tests {
 
     #[test]
     fn test_u_frame_snrm() {
-        // SNRM in DLMS: 0x93
+        // SNRM in DLMS: 0x93 = 0b10010011
+        // b4=1 (P/F), b3:b2=00 (modifier=0), b1:b0=11 (U-frame)
         let cf = ControlField::from_byte(0x93);
         if let FrameType::U { u_type, poll_final } = cf.frame_type() {
-            // modifier extraction from DLMS HDLC
-            assert_eq!(u_type, (0x93 >> 2) & 0x07);
+            assert_eq!(u_type, 0); // modifier in bits 3:2
             assert!(poll_final);
         } else {
             panic!("Expected U-frame");
@@ -428,10 +428,11 @@ mod tests {
 
     #[test]
     fn test_u_frame_ua() {
-        // UA in DLMS: 0x73
+        // UA in DLMS: 0x73 = 0b01110011
+        // b4=1 (P/F), b3:b2=00 (modifier=0), b1:b0=11 (U-frame)
         let cf = ControlField::from_byte(0x73);
         if let FrameType::U { u_type, poll_final } = cf.frame_type() {
-            assert_eq!(u_type, (0x73 >> 2) & 0x07);
+            assert_eq!(u_type, 0);
             assert!(poll_final);
         } else {
             panic!("Expected U-frame");

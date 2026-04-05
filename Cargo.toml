@@ -27,3 +27,4 @@ dlms-asn1 = { path = "dlms-asn1" }
 dlms-security = { path = "dlms-security" }
 dlms-cosem = { path = "dlms-cosem" }
 dlms-transport = { path = "dlms-transport" }
+proptest = "1.4"

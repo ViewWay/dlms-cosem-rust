@@ -1,0 +1,11 @@
+[package]
+name = "dlms-hdlc-fuzz"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+dlms-hdlc = { path = "../dlms-hdlc" }
+libfuzzer-sys = "0.4"
+
+[workspace]

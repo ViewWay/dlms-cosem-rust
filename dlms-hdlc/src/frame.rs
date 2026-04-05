@@ -11,21 +11,22 @@ pub enum FrameType {
 impl FrameType {
     pub fn from_control(control: u8) -> Self {
         if control & 0x01 == 0 {
-            // I-frame
+            // I-frame: N(S) bits 3:1, N(R) bits 7:5
             FrameType::I {
                 send_seq: (control >> 1) & 0x07,
                 recv_seq: (control >> 5) & 0x07,
             }
         } else if control & 0x02 == 0 {
-            // S-frame
+            // S-frame: S-type bits 4:3, N(R) bits 7:5
             FrameType::S {
                 s_type: (control >> 2) & 0x03,
                 recv_seq: (control >> 5) & 0x07,
             }
         } else {
-            // U-frame
+            // U-frame: modifier in bits 3:2 (2 bits), P/F in bit 4
+            // Standard HDLC: b4=P/F, b3:b2=modifier, b1:b0=1,1
             FrameType::U {
-                u_type: (control >> 2) & 0x07,
+                u_type: (control >> 2) & 0x03,
                 poll_final: (control >> 4) & 0x01 == 1,
             }
         }
