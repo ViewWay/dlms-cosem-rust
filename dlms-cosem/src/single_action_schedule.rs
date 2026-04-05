@@ -97,4 +97,48 @@ mod tests {
         });
         assert_eq!(s.entries().len(), 1);
     }
+
+    #[test]
+    fn test_single_action_schedule_attribute_count() {
+        let s = SingleActionSchedule::new(ObisCode::CLOCK);
+        assert_eq!(s.attribute_count(), 3);
+    }
+
+    #[test]
+    fn test_single_action_schedule_method_count() {
+        let s = SingleActionSchedule::new(ObisCode::CLOCK);
+        assert_eq!(s.method_count(), 0);
+    }
+
+    #[test]
+    fn test_single_action_schedule_attr1() {
+        let s = SingleActionSchedule::new(ObisCode::CLOCK);
+        let bytes = s.attribute_to_bytes(1).unwrap();
+        assert_eq!(bytes.len(), 8);
+    }
+
+    #[test]
+    fn test_single_action_schedule_attr2() {
+        let mut s = SingleActionSchedule::new(ObisCode::CLOCK);
+        s.add_entry(ActionScheduleEntry {
+            executed_script_logical_name: ObisCode::CLOCK,
+            executed_at: DlmsData::DateTime([0; 12]),
+        });
+        let bytes = s.attribute_to_bytes(2).unwrap();
+        assert!(!bytes.is_empty());
+    }
+
+    #[test]
+    fn test_single_action_schedule_multiple_entries() {
+        let mut s = SingleActionSchedule::new(ObisCode::CLOCK);
+        s.add_entry(ActionScheduleEntry {
+            executed_script_logical_name: ObisCode::CLOCK,
+            executed_at: DlmsData::DateTime([0; 12]),
+        });
+        s.add_entry(ActionScheduleEntry {
+            executed_script_logical_name: ObisCode::new(0, 0, 1, 0, 0, 255),
+            executed_at: DlmsData::DateTime([0; 12]),
+        });
+        assert_eq!(s.entries().len(), 2);
+    }
 }

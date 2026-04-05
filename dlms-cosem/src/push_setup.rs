@@ -122,4 +122,49 @@ mod tests {
         ps.add_object(8, ObisCode::CLOCK, 2);
         assert_eq!(ps.object_count(), 1);
     }
+
+    #[test]
+    fn test_push_setup_attribute_count() {
+        let ps = PushSetup::new(ObisCode::new(0, 0, 15, 0, 0, 255));
+        assert_eq!(ps.attribute_count(), 8);
+    }
+
+    #[test]
+    fn test_push_setup_method_count() {
+        let ps = PushSetup::new(ObisCode::new(0, 0, 15, 0, 0, 255));
+        assert_eq!(ps.method_count(), 0);
+    }
+
+    #[test]
+    fn test_push_setup_attr1() {
+        let ps = PushSetup::new(ObisCode::new(0, 0, 15, 0, 0, 255));
+        let bytes = ps.attribute_to_bytes(1).unwrap();
+        assert_eq!(bytes.len(), 8);
+    }
+
+    #[test]
+    fn test_push_setup_attr2_objects() {
+        let mut ps = PushSetup::new(ObisCode::new(0, 0, 15, 0, 0, 255));
+        ps.add_object(8, ObisCode::CLOCK, 2);
+        ps.add_object(3, ObisCode::ACTIVE_POWER_L1, 2);
+        let bytes = ps.attribute_to_bytes(2).unwrap();
+        assert!(!bytes.is_empty());
+    }
+
+    #[test]
+    fn test_push_setup_service() {
+        let mut ps = PushSetup::new(ObisCode::new(0, 0, 15, 0, 0, 255));
+        assert_eq!(ps.service(), 0);
+        ps.set_service(1234);
+        assert_eq!(ps.service(), 1234);
+    }
+
+    #[test]
+    fn test_push_setup_multiple_objects() {
+        let mut ps = PushSetup::new(ObisCode::new(0, 0, 15, 0, 0, 255));
+        ps.add_object(8, ObisCode::CLOCK, 2);
+        ps.add_object(1, ObisCode::new(1, 0, 0, 9, 0, 255), 2);
+        ps.add_object(7, ObisCode::new(1, 0, 99, 1, 0, 255), 2);
+        assert_eq!(ps.object_count(), 3);
+    }
 }

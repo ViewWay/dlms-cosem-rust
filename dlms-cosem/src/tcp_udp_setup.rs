@@ -61,4 +61,35 @@ mod tests {
         let obj = TcpUdpSetup::new(ObisCode::new(0, 0, 96, 0, 0, 255));
         assert_eq!(obj.class_id(), 43);
     }
+
+    #[test]
+    fn test_tcp_udp_setup_attribute_count() {
+        let obj = TcpUdpSetup::new(ObisCode::new(0, 0, 96, 0, 0, 255));
+        assert_eq!(obj.attribute_count(), 6);
+    }
+
+    #[test]
+    fn test_tcp_udp_setup_method_count() {
+        let obj = TcpUdpSetup::new(ObisCode::new(0, 0, 96, 0, 0, 255));
+        assert_eq!(obj.method_count(), 0);
+    }
+
+    #[test]
+    fn test_tcp_udp_setup_version() {
+        let obj = TcpUdpSetup::new(ObisCode::new(0, 0, 96, 0, 0, 255));
+        assert_eq!(obj.version(), 0);
+    }
+
+    #[test]
+    fn test_tcp_udp_setup_attr1() {
+        let obj = TcpUdpSetup::new(ObisCode::new(0, 0, 96, 0, 0, 255));
+        let bytes = obj.attribute_to_bytes(1).unwrap();
+        assert_eq!(bytes.len(), 8);
+    }
+
+    #[test]
+    fn test_tcp_udp_setup_unsupported_attr() {
+        let obj = TcpUdpSetup::new(ObisCode::new(0, 0, 96, 0, 0, 255));
+        assert!(obj.attribute_to_bytes(99).is_none());
+    }
 }

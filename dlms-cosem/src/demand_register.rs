@@ -95,4 +95,38 @@ mod tests {
         r.attribute_from_bytes(2, &bytes).unwrap();
         assert_eq!(r.value().as_i32(), Some(555));
     }
+
+    #[test]
+    fn test_demand_register_attribute_count() {
+        let r = DemandRegister::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(0));
+        assert_eq!(r.attribute_count(), 7);
+    }
+
+    #[test]
+    fn test_demand_register_attr1_logical_name() {
+        let r = DemandRegister::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(0));
+        let bytes = r.attribute_to_bytes(1).unwrap();
+        assert_eq!(bytes.len(), 8);
+    }
+
+    #[test]
+    fn test_demand_register_attr2_value() {
+        let r = DemandRegister::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(12345));
+        let bytes = r.attribute_to_bytes(2).unwrap();
+        assert!(!bytes.is_empty());
+    }
+
+    #[test]
+    fn test_demand_register_attr3_unit_scaler() {
+        let r = DemandRegister::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(0));
+        let bytes = r.attribute_to_bytes(3).unwrap();
+        assert!(!bytes.is_empty());
+    }
+
+    #[test]
+    fn test_demand_register_set_value() {
+        let mut r = DemandRegister::new(ObisCode::ACTIVE_POWER_L1, DlmsData::DoubleLong(0));
+        r.set_value(DlmsData::DoubleLong(9999));
+        assert_eq!(r.value().as_i32(), Some(9999));
+    }
 }
