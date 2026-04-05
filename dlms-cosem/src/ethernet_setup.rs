@@ -199,7 +199,6 @@ impl CosemObject for EthernetSetup {
                 }
             }
             7 => {
-                let decoded = dlms_axdr::encode(&DlmsData::LongUnsigned(self.mtu));
                 if let DlmsData::LongUnsigned(mtu) = dlms_axdr::decode(data).map_err(|_| CosemObjectError::InvalidData)? {
                     self.mtu = mtu;
                     Ok(())

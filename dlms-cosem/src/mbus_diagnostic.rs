@@ -159,7 +159,7 @@ impl CosemObject for MbusDiagnostic {
             ))),
             7 => Some(dlms_axdr::encode(&DlmsData::Enum(self.last_error_code))),
             8 => Some(dlms_axdr::encode(&DlmsData::Unsigned(self.signal_quality))),
-            9 => Some(dlms_axdr::encode(&DlmsData::Float32(self.bus_voltage))),
+            9 => Some(dlms_axdr::encode(&DlmsData::Float(self.bus_voltage))),
             _ => None,
         }
     }
@@ -186,7 +186,7 @@ impl CosemObject for MbusDiagnostic {
             }
             9 => {
                 let decoded = dlms_axdr::decode(data).map_err(|_| CosemObjectError::InvalidData)?;
-                if let DlmsData::Float32(voltage) = decoded {
+                if let DlmsData::Float(voltage) = decoded {
                     self.bus_voltage = voltage;
                     Ok(())
                 } else {

@@ -13,7 +13,7 @@ pub struct PowerQualityMonitor {
     voltage_swell_count: u32,
     interruption_count: u32,
     voltage_unbalance: u8,
-    frequency_deviation: i16,
+    frequency_deviation: i8,
     thd_voltage: u8,
     thd_current: u8,
     power_factor_avg: u8,
@@ -66,11 +66,11 @@ impl PowerQualityMonitor {
         self.voltage_unbalance = unbalance;
     }
 
-    pub fn frequency_deviation(&self) -> i16 {
+    pub fn frequency_deviation(&self) -> i8 {
         self.frequency_deviation
     }
 
-    pub fn set_frequency_deviation(&mut self, deviation: i16) {
+    pub fn set_frequency_deviation(&mut self, deviation: i8) {
         self.frequency_deviation = deviation;
     }
 
@@ -272,8 +272,8 @@ mod tests {
     #[test]
     fn test_power_quality_monitor_frequency_deviation() {
         let mut pqm = PowerQualityMonitor::new(ObisCode::new(0, 0, 111, 0, 0, 255));
-        pqm.set_frequency_deviation(-50); // -0.5 Hz
-        assert_eq!(pqm.frequency_deviation(), -50);
+        pqm.set_frequency_deviation(-5); // -0.05 Hz (in centi-Hz)
+        assert_eq!(pqm.frequency_deviation(), -5);
     }
 
     #[test]
