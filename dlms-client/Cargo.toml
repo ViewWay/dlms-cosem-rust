@@ -16,3 +16,6 @@ dlms-asn1 = { path = "../dlms-asn1" }
 dlms-security = { path = "../dlms-security" }
 dlms-cosem = { path = "../dlms-cosem" }
 dlms-transport = { path = "../dlms-transport" }
+
+[dev-dependencies]
+dlms-server = { path = "../dlms-server" }
