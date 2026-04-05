@@ -308,8 +308,8 @@ mod tests {
 
     #[test]
     fn test_as_f64() {
-        let val = DlmsData::Float(3.14);
-        assert!((val.as_f64().unwrap() - 3.14).abs() < 0.01);
+        let val = DlmsData::Float(1.234);
+        assert!((val.as_f64().unwrap() - 1.234).abs() < 0.001);
     }
 
     #[test]

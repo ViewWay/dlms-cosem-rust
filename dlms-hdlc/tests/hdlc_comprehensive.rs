@@ -90,7 +90,9 @@ fn test_stuff_large_payload() {
 fn test_stuff_preserves_non_special() {
     // All bytes except 0x7E and 0x7D should pass through unchanged
     for b in 0u8..=255 {
-        if b == 0x7E || b == 0x7D { continue; }
+        if b == 0x7E || b == 0x7D {
+            continue;
+        }
         assert_eq!(stuff_bytes(&[b]), vec![b]);
     }
 }
@@ -223,7 +225,7 @@ fn test_escape_at_end_of_stream() {
     parser.feed(0x03);
     parser.feed(0x10);
     parser.feed(0x7D); // escape with no following byte
-    // No assertion needed — just checking it doesn't panic
+                       // No assertion needed — just checking it doesn't panic
 }
 
 #[test]
@@ -234,7 +236,7 @@ fn test_parser_recovery_after_bad_escape() {
     parser.feed(0x03);
     parser.feed(0x7D); // enter escaped state
     parser.feed(0x7E); // flag during escape — should reset
-    // Now feed a valid frame
+                       // Now feed a valid frame
     let good = build_frame(0x03, 0x73, &[]);
     let mut count = 0;
     for &byte in &good {
@@ -253,7 +255,11 @@ fn test_parser_recovery_after_bad_escape() {
 #[test]
 fn test_i_frame_all_send_seqs() {
     for ns in 0..=7 {
-        let control = FrameType::I { send_seq: ns, recv_seq: 0 }.to_control();
+        let control = FrameType::I {
+            send_seq: ns,
+            recv_seq: 0,
+        }
+        .to_control();
         let cf = ControlField::from_byte(control);
         if let FrameType::I { send_seq, .. } = cf.frame_type() {
             assert_eq!(send_seq, ns);
@@ -266,7 +272,11 @@ fn test_i_frame_all_send_seqs() {
 #[test]
 fn test_i_frame_all_recv_seqs() {
     for nr in 0..=7 {
-        let control = FrameType::I { send_seq: 0, recv_seq: nr }.to_control();
+        let control = FrameType::I {
+            send_seq: 0,
+            recv_seq: nr,
+        }
+        .to_control();
         let cf = ControlField::from_byte(control);
         if let FrameType::I { recv_seq, .. } = cf.frame_type() {
             assert_eq!(recv_seq, nr);
@@ -280,13 +290,25 @@ fn test_i_frame_all_recv_seqs() {
 fn test_i_frame_with_poll() {
     for ns in 0..=7 {
         for nr in 0..=7 {
-            let ft = FrameType::I { send_seq: ns, recv_seq: nr };
+            let ft = FrameType::I {
+                send_seq: ns,
+                recv_seq: nr,
+            };
             let control = ft.to_control();
             // Set poll bit (bit 4)
             let control_p = control | 0x10;
             let cf = ControlField::from_byte(control_p);
-            assert!(cf.poll(), "I-frame N(S)={} N(R)={} with P=1 should have poll()", ns, nr);
-            if let FrameType::I { send_seq: s, recv_seq: r } = cf.frame_type() {
+            assert!(
+                cf.poll(),
+                "I-frame N(S)={} N(R)={} with P=1 should have poll()",
+                ns,
+                nr
+            );
+            if let FrameType::I {
+                send_seq: s,
+                recv_seq: r,
+            } = cf.frame_type()
+            {
                 assert_eq!(s, ns);
                 assert_eq!(r, nr);
             } else {
@@ -304,9 +326,17 @@ fn test_i_frame_with_poll() {
 fn test_s_frame_types() {
     let types = [(0, "RR"), (1, "REJ"), (2, "RNR"), (3, "SREJ")];
     for &(s_type, name) in &types {
-        let control = FrameType::S { s_type, recv_seq: 0 }.to_control();
+        let control = FrameType::S {
+            s_type,
+            recv_seq: 0,
+        }
+        .to_control();
         let cf = ControlField::from_byte(control);
-        if let FrameType::S { s_type: st, recv_seq: 0 } = cf.frame_type() {
+        if let FrameType::S {
+            s_type: st,
+            recv_seq: 0,
+        } = cf.frame_type()
+        {
             assert_eq!(st, s_type, "S-frame type mismatch for {}", name);
         } else {
             panic!("Expected S-frame for {}", name);
@@ -318,11 +348,18 @@ fn test_s_frame_types() {
 fn test_s_frame_with_poll() {
     for s_type in 0..=3 {
         for nr in 0..=7 {
-            let ft = FrameType::S { s_type, recv_seq: nr };
+            let ft = FrameType::S {
+                s_type,
+                recv_seq: nr,
+            };
             let control = ft.to_control() | 0x10; // poll bit
             let cf = ControlField::from_byte(control);
             assert!(cf.poll());
-            if let FrameType::S { s_type: st, recv_seq: r } = cf.frame_type() {
+            if let FrameType::S {
+                s_type: st,
+                recv_seq: r,
+            } = cf.frame_type()
+            {
                 assert_eq!(st, s_type);
                 assert_eq!(r, nr);
             } else {
@@ -342,7 +379,10 @@ fn test_u_frame_roundtrip() {
     // All u_type 0-3 roundtrip with any poll_final
     for u_type in 0u8..4 {
         for pf in [false, true] {
-            let ft = FrameType::U { u_type, poll_final: pf };
+            let ft = FrameType::U {
+                u_type,
+                poll_final: pf,
+            };
             let control = ft.to_control();
             let ft2 = FrameType::from_control(control);
             assert_eq!(ft, ft2, "u_type={} pf={} roundtrip", u_type, pf);
@@ -534,7 +574,10 @@ fn test_parser_recovery_after_crc_error() {
     assert_eq!(results.len(), 3);
     assert!(results[0].is_ok(), "First frame should be valid");
     assert!(results[1].is_err(), "Corrupted frame should fail CRC");
-    assert!(results[2].is_ok(), "Third frame should be valid after recovery");
+    assert!(
+        results[2].is_ok(),
+        "Third frame should be valid after recovery"
+    );
 }
 
 #[test]
@@ -555,7 +598,11 @@ fn test_parser_recovery_multiple_errors() {
     let mut err_count = 0;
     for &byte in &data {
         if let Some(result) = parser.feed(byte) {
-            if result.is_ok() { ok_count += 1; } else { err_count += 1; }
+            if result.is_ok() {
+                ok_count += 1;
+            } else {
+                err_count += 1;
+            }
         }
     }
     assert_eq!(ok_count, 2, "Should recover and parse 2 good frames");
@@ -597,7 +644,7 @@ fn test_build_frame_structure() {
     assert_eq!(frame[0], 0x7E, "Should start with flag");
     assert_eq!(*frame.last().unwrap(), 0x7E, "Should end with flag");
     // No raw 0x7E or 0x7D in the stuffed payload between flags
-    for &b in &frame[1..frame.len()-1] {
+    for &b in &frame[1..frame.len() - 1] {
         assert_ne!(b, 0x7E, "Stuffed payload should not contain 0x7E");
     }
 }
@@ -620,7 +667,10 @@ fn test_frametype_roundtrip() {
     // I-frame combos
     for ns in 0..=7 {
         for nr in 0..=7 {
-            let ft = FrameType::I { send_seq: ns, recv_seq: nr };
+            let ft = FrameType::I {
+                send_seq: ns,
+                recv_seq: nr,
+            };
             let control = ft.to_control();
             assert_eq!(control & 0x01, 0, "I-frame bit 0 must be 0");
             let ft2 = FrameType::from_control(control);
@@ -630,7 +680,10 @@ fn test_frametype_roundtrip() {
     // S-frame combos
     for st in 0..=3 {
         for nr in 0..=7 {
-            let ft = FrameType::S { s_type: st, recv_seq: nr };
+            let ft = FrameType::S {
+                s_type: st,
+                recv_seq: nr,
+            };
             let control = ft.to_control();
             assert_eq!(control & 0x03, 0x01, "S-frame bits 1:0 must be 01");
             let ft2 = FrameType::from_control(control);
@@ -640,7 +693,10 @@ fn test_frametype_roundtrip() {
     // U-frame: 2-bit u_type (bits 3:2) + poll_final (bit 4) — no collision
     for ut in 0u8..4 {
         for pf in [false, true] {
-            let ft = FrameType::U { u_type: ut, poll_final: pf };
+            let ft = FrameType::U {
+                u_type: ut,
+                poll_final: pf,
+            };
             let control = ft.to_control();
             assert_eq!(control & 0x03, 0x03);
             let ft2 = FrameType::from_control(control);
@@ -680,7 +736,10 @@ fn test_parser_reset_clears_state() {
 
 #[test]
 fn test_hdlc_error_crc_display() {
-    let err = HdlcError::CrcError { expected: 0x1234, actual: 0x5678 };
+    let err = HdlcError::CrcError {
+        expected: 0x1234,
+        actual: 0x5678,
+    };
     let msg = format!("{}", err);
     assert!(msg.contains("CRC"));
     assert!(msg.contains("1234") || msg.contains("4660")); // hex or decimal

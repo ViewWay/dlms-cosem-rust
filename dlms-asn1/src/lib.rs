@@ -15,6 +15,9 @@ mod ber;
 mod rlre;
 mod rlrq;
 
+#[cfg(test)]
+mod property_tests;
+
 pub use aare::AareApdu;
 pub use aarq::AarqApdu;
 pub use ber::{BerDecoder, BerEncoder, BerTag};

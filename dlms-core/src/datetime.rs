@@ -1,7 +1,7 @@
 //! CosemDateTime - DLMS date/time representation (OctetString, DateTime, OctetString, DateTime)
 
 /// DLMS Date-Time as defined in IEC 62056-53
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct CosemDateTime {
     pub year: Option<u16>,       // 0 = not specified
     pub month: Option<u8>,       // 0-12, 0 = not specified, 13-16 = dev spec
@@ -13,23 +13,6 @@ pub struct CosemDateTime {
     pub hundredths: Option<u8>,  // 0-99
     pub deviation: i16,          // deviation in minutes, -720 to +720
     pub clock_status: u8,        // clock status bits
-}
-
-impl Default for CosemDateTime {
-    fn default() -> Self {
-        Self {
-            year: None,
-            month: None,
-            day: None,
-            day_of_week: None,
-            hour: None,
-            minute: None,
-            second: None,
-            hundredths: None,
-            deviation: 0,
-            clock_status: 0,
-        }
-    }
 }
 
 impl CosemDateTime {
@@ -91,7 +74,7 @@ impl CosemDateTime {
         if let Some(hs) = self.hundredths {
             buf[8] = hs;
         }
-        let dev = self.deviation as i16;
+        let dev = self.deviation;
         buf[9] = (dev >> 8) as u8;
         buf[10] = (dev & 0xFF) as u8;
         buf[11] = self.clock_status;

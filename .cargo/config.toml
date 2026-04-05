@@ -1,0 +1,2 @@
+[env]
+PATH = { value = "/Users/yimiliya/.rustup/toolchains/stable-aarch64-apple-darwin/bin:/Users/yimiliya/.cargo/bin:$PATH", force = true }

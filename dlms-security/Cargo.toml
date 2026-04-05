@@ -14,6 +14,9 @@ full = ["aes"]
 [dependencies]
 dlms-core = { path = "../dlms-core" }
 
+[dev-dependencies]
+proptest = { workspace = true }
+
 [dependencies.aes-gcm]
 version = "0.10"
 optional = true

@@ -1,8 +1,8 @@
 //! Property-based tests for AXDR encoding/decoding
 
-use proptest::prelude::*;
-use dlms_axdr::{encode, decode};
+use dlms_axdr::{decode, encode};
 use dlms_core::DlmsData;
+use proptest::prelude::*;
 
 proptest! {
     #[test]

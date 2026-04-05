@@ -1,7 +1,7 @@
 //! Property-based tests using proptest
 
-use proptest::prelude::*;
 use dlms_hdlc::*;
+use proptest::prelude::*;
 
 // ============================================================
 // CRC-16/X.25 properties

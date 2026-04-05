@@ -20,6 +20,9 @@ mod sm4;
 mod sm4_gcm;
 mod suite;
 
+#[cfg(test)]
+mod property_tests;
+
 pub use hls::{HlsAuthResult, HlsContext, HlsStep};
 pub use kdf::{kdf, kdf_gmac};
 pub use key_management::KeyManagement;

@@ -35,7 +35,7 @@ impl FrameType {
     pub fn to_control(&self) -> u8 {
         match self {
             FrameType::I { send_seq, recv_seq } => {
-                0x00 | ((*send_seq & 0x07) << 1) | ((*recv_seq & 0x07) << 5)
+                ((*send_seq & 0x07) << 1) | ((*recv_seq & 0x07) << 5)
             }
             FrameType::S { s_type, recv_seq } => {
                 0x01 | ((*s_type & 0x03) << 2) | ((*recv_seq & 0x07) << 5)
