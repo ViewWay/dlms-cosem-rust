@@ -11,7 +11,7 @@ DLMS/COSEM protocol stack in pure Rust — Blue Book (IEC 62056-53) implementati
 | [dlms-axdr](./dlms-axdr/) | AXDR encoding/decoding |
 | [dlms-asn1](./dlms-asn1/) | ASN.1 BER encoding/decoding |
 | [dlms-security](./dlms-security/) | SM4 encryption (ECB, GCM, GMAC) |
-| [dlms-cosem](./dlms-cosem/) | COSEM interface classes (122 IC classes) |
+| [dlms-cosem](./dlms-cosem/) | COSEM interface classes (130 IC classes) |
 | [dlms-client](./dlms-client/) | DLMS client (GET/SET/ACTION) |
 | [dlms-server](./dlms-server/) | DLMS server (GET/SET/ACTION handlers) |
 | [dlms-transport](./dlms-transport/) | Transport (TCP, UDP, serial) |
@@ -20,7 +20,7 @@ DLMS/COSEM protocol stack in pure Rust — Blue Book (IEC 62056-53) implementati
 
 - **No-std support**: All crates support `no_std` (feature gate: `default = ["std"]`)
 - **SM4 encryption**: Full SM4 implementation for Chinese DLMS
-- **Extensive testing**: 739 lib tests + property tests + fuzz targets
+- **Extensive testing**: 967 tests + property tests + fuzz targets
 
 ## Quick Start
 
@@ -99,14 +99,16 @@ cargo fuzz run hdlc_parser -- -max_total_time=300
 
 ## Statistics
 
-- **Total tests**: 739 lib tests
+- **Total tests**: 967
 - **Coverage**: 
   - dlms-hdlc: 99 tests (44 unit + 45 integration + 10 property)
-  - dlms-axdr: 58 tests (48 unit + 10 property)
-  - dlms-asn1: 24 tests
-  - dlms-security: 11 tests
-  - dlms-cosem: 352 tests
+  - dlms-cosem: 580 tests
+  - dlms-axdr: 54 tests
   - dlms-client: 48 tests
-  - dlms-server: 11 tests
+  - dlms-hdlc integration: 45 tests
+  - dlms-asn1: 38 tests
+  - dlms-security: 26 tests
+  - dlms-core: 10 tests
+  - dlms-axdr property: 10 tests
   - dlms-transport: 11 tests
-  - dlms-core: 8 tests
+  - dlms-server: 11 tests
