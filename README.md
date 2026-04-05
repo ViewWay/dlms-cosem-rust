@@ -11,7 +11,7 @@ DLMS/COSEM protocol stack in pure Rust — Blue Book (IEC 62056-53) implementati
 | [dlms-axdr](./dlms-axdr/) | AXDR encoding/decoding |
 | [dlms-asn1](./dlms-asn1/) | ASN.1 BER encoding/decoding |
 | [dlms-security](./dlms-security/) | SM4 encryption (ECB, GCM, GMAC) |
-| [dlms-cosem](./dlms-cosem/) | COSEM interface classes (80+ IC classes) |
+| [dlms-cosem](./dlms-cosem/) | COSEM interface classes (82 IC classes) |
 | [dlms-client](./dlms-client/) | DLMS client (GET/SET/ACTION) |
 | [dlms-server](./dlms-server/) | DLMS server (GET/SET/ACTION handlers) |
 | [dlms-transport](./dlms-transport/) | Transport (TCP, UDP, serial) |
@@ -30,7 +30,7 @@ DLMS/COSEM protocol stack in pure Rust — Blue Book (IEC 62056-53) implementati
 use dlms_hdlc::{HdlcParser, build_frame};
 
 // Build a GET-REQUEST frame
-let info = vec![0xE6, 0xE0, 0x00, 0x01, 0x00, 0x00, 0xFF, 0xFF];
+let info = vec![0xE6, 0xE0, 0x00, 0x01, 0x00, 0xFF, 0xFF];
 let frame = build_frame(0x03, 0x10, &info);
 
 // Parse incoming data
@@ -94,11 +94,19 @@ cargo test -p dlms-axdr --test property_tests
 
 ```bash
 cd fuzz
-cargo install cargo-fuzz  # if not already installed
 cargo fuzz run hdlc_parser -- -max_total_time=300
 ```
 
 ## Statistics
 
-- **Total tests**: 531 lib tests (unit + integration)
-- **Coverage**: HDLC (89), AXDR (58), ASN.1 (24), Security (11), COSEM (273), Client (48), Server (11), Transport (11), Core (8)
+- **Total tests**: 531 lib tests
+- **Coverage**: 
+  - dlms-hdlc: 99 tests (44 unit + 45 integration + 10 property)
+  - dlms-axdr: 58 tests (48 unit + 10 property)
+  - dlms-asn1: 24 tests
+  - dlms-security: 11 tests
+  - dlms-cosem: 273 tests
+  - dlms-client: 48 tests
+  - dlms-server: 11 tests
+  - dlms-transport: 11 tests
+  - dlms-core: 8 tests
