@@ -15,6 +15,7 @@
 // Re-exports
 mod access_result;
 mod attribute;
+mod block_transfer;
 mod constants;
 mod cosem_object;
 mod data;
