@@ -14,6 +14,7 @@ mod block_transfer;
 mod crc;
 mod frame;
 mod parser;
+mod wport;
 
 pub use block_transfer::{
     Block, BlockTransfer, BlockTransferError, BlockTransferState, TransferProgress,
@@ -23,6 +24,12 @@ pub use crc::{crc16_hdlc, crc16_hdlc_update};
     s_frame, u_frame, ControlField, FrameFormat, FrameType, HdlcAddress, HdlcFrame, HdlcParameters,
 };
 pub use parser::{HdlcParser, ParserState};
+pub use wport::{
+    WPORT_DLMS_COSEM_TCP, WPORT_DLMS_COSEM_UDP,
+    WPORT_ALL_STATION, WPORT_CLIENT_MGMT_PROCESS, WPORT_MGMT_LOGICAL_DEVICE,
+    WPORT_NO_STATION, WPORT_PUBLIC_CLIENT,
+    get_wport_description, is_reserved_wport,
+};
 
 /// HDLC constants
 pub const HDLC_FLAG: u8 = 0x7E;

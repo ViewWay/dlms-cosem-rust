@@ -15,14 +15,18 @@
 // Re-exports
 mod access_result;
 mod attribute;
+mod constants;
 mod cosem_object;
 mod data;
 mod datetime;
 mod obis;
+mod operation_mode;
 
 pub use access_result::AccessResult;
 pub use attribute::{CosemAttribute, CosemMethod};
+pub use constants::{DLMS_TCP_PORT, DLMS_UDP_PORT};
 pub use cosem_object::{CosemObject, CosemObjectError};
 pub use data::DlmsData;
 pub use datetime::CosemDateTime;
 pub use obis::ObisCode;
+pub use operation_mode::{OperationMode, OperationModeError};
