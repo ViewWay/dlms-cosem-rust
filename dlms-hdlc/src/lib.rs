@@ -10,10 +10,14 @@ extern crate alloc;
 use alloc::vec::Vec;
 use core::fmt;
 
+mod block_transfer;
 mod crc;
 mod frame;
 mod parser;
 
+pub use block_transfer::{
+    Block, BlockTransfer, BlockTransferError, BlockTransferState, TransferProgress,
+};
 pub use crc::{crc16_hdlc, crc16_hdlc_update};
  pub use frame::{
     s_frame, u_frame, ControlField, FrameFormat, FrameType, HdlcAddress, HdlcFrame, HdlcParameters,
