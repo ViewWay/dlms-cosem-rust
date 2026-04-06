@@ -59,7 +59,7 @@ impl PushSetup {
 
 impl CosemObject for PushSetup {
     fn class_id(&self) -> u16 {
-        15
+        40
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -113,7 +113,7 @@ mod tests {
     #[test]
     fn test_push_setup_class_id() {
         let ps = PushSetup::new(ObisCode::new(0, 0, 15, 0, 0, 255));
-        assert_eq!(ps.class_id(), 15);
+        assert_eq!(ps.class_id(), 40);
     }
 
     #[test]

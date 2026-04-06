@@ -23,7 +23,7 @@ impl SapAssignment {
 
 impl CosemObject for SapAssignment {
     fn class_id(&self) -> u16 {
-        13
+        17
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -59,6 +59,6 @@ mod tests {
     #[test]
     fn test_sap_assignment_class_id() {
         let obj = SapAssignment::new(ObisCode::new(0, 0, 96, 0, 0, 255));
-        assert_eq!(obj.class_id(), 13);
+        assert_eq!(obj.class_id(), 17);
     }
 }

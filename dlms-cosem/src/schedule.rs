@@ -54,7 +54,7 @@ impl Schedule {
 
 impl CosemObject for Schedule {
     fn class_id(&self) -> u16 {
-        12
+        10
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -104,7 +104,7 @@ mod tests {
     #[test]
     fn test_schedule_class_id() {
         let s = Schedule::new(ObisCode::new(0, 0, 12, 0, 0, 255));
-        assert_eq!(s.class_id(), 12);
+        assert_eq!(s.class_id(), 10);
     }
 
     #[test]

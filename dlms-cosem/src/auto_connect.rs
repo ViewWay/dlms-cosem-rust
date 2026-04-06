@@ -23,7 +23,7 @@ impl AutoConnect {
 
 impl CosemObject for AutoConnect {
     fn class_id(&self) -> u16 {
-        62
+        29
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -59,6 +59,6 @@ mod tests {
     #[test]
     fn test_auto_connect_class_id() {
         let obj = AutoConnect::new(ObisCode::new(0, 0, 96, 0, 0, 255));
-        assert_eq!(obj.class_id(), 62);
+        assert_eq!(obj.class_id(), 29);
     }
 }

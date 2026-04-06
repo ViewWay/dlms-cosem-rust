@@ -38,7 +38,7 @@ impl ActivityCalendar {
 
 impl CosemObject for ActivityCalendar {
     fn class_id(&self) -> u16 {
-        12
+        20
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -78,7 +78,7 @@ mod tests {
     #[test]
     fn test_activity_calendar_class_id() {
         let ac = ActivityCalendar::new(ObisCode::new(0, 0, 12, 0, 0, 255));
-        assert_eq!(ac.class_id(), 12);
+        assert_eq!(ac.class_id(), 20);
     }
 
     #[test]

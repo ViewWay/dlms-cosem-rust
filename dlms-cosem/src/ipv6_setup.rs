@@ -23,7 +23,7 @@ impl Ipv6Setup {
 
 impl CosemObject for Ipv6Setup {
     fn class_id(&self) -> u16 {
-        45
+        48
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -59,6 +59,6 @@ mod tests {
     #[test]
     fn test_ipv6_setup_class_id() {
         let obj = Ipv6Setup::new(ObisCode::new(0, 0, 96, 0, 0, 255));
-        assert_eq!(obj.class_id(), 45);
+        assert_eq!(obj.class_id(), 48);
     }
 }

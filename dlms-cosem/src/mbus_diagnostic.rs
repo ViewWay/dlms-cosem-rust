@@ -119,7 +119,7 @@ impl MbusDiagnostic {
 
 impl CosemObject for MbusDiagnostic {
     fn class_id(&self) -> u16 {
-        110
+        77
     }
 
     fn logical_name(&self) -> ObisCode {
@@ -216,7 +216,7 @@ mod tests {
     #[test]
     fn test_mbus_diagnostic_new() {
         let diag = MbusDiagnostic::new(ObisCode::new(0, 0, 110, 0, 0, 255));
-        assert_eq!(diag.class_id(), 110);
+        assert_eq!(diag.class_id(), 77);
     }
 
     #[test]

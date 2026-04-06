@@ -23,7 +23,7 @@ impl Account {
 
 impl CosemObject for Account {
     fn class_id(&self) -> u16 {
-        16
+        111
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -59,6 +59,6 @@ mod tests {
     #[test]
     fn test_account_class_id() {
         let obj = Account::new(ObisCode::new(0, 0, 96, 0, 0, 255));
-        assert_eq!(obj.class_id(), 16);
+        assert_eq!(obj.class_id(), 111);
     }
 }

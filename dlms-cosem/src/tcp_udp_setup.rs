@@ -23,7 +23,7 @@ impl TcpUdpSetup {
 
 impl CosemObject for TcpUdpSetup {
     fn class_id(&self) -> u16 {
-        43
+        41
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -59,7 +59,7 @@ mod tests {
     #[test]
     fn test_tcp_udp_setup_class_id() {
         let obj = TcpUdpSetup::new(ObisCode::new(0, 0, 96, 0, 0, 255));
-        assert_eq!(obj.class_id(), 43);
+        assert_eq!(obj.class_id(), 41);
     }
 
     #[test]

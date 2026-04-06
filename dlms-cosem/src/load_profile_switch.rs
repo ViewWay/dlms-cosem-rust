@@ -43,7 +43,7 @@ impl UtilityTables {
 
 impl CosemObject for UtilityTables {
     fn class_id(&self) -> u16 {
-        26
+        90
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -104,7 +104,7 @@ mod tests {
     #[test]
     fn test_load_profile_switch_new() {
         let lps = UtilityTables::new(ObisCode::CLOCK);
-        assert_eq!(lps.class_id(), 26);
+        assert_eq!(lps.class_id(), 90);
     }
 
     #[test]

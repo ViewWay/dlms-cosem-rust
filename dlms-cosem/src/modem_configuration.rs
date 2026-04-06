@@ -23,7 +23,7 @@ impl ModemConfiguration {
 
 impl CosemObject for ModemConfiguration {
     fn class_id(&self) -> u16 {
-        42
+        27
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -59,6 +59,6 @@ mod tests {
     #[test]
     fn test_modem_configuration_class_id() {
         let obj = ModemConfiguration::new(ObisCode::new(0, 0, 96, 0, 0, 255));
-        assert_eq!(obj.class_id(), 42);
+        assert_eq!(obj.class_id(), 27);
     }
 }

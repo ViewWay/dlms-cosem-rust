@@ -21,7 +21,7 @@ impl LorawanSetup {
 
 impl CosemObject for LorawanSetup {
     fn class_id(&self) -> u16 {
-        107
+        128
     }
     fn logical_name(&self) -> ObisCode {
         ObisCode::new(0, 0, 110, 0, 0, 255)
@@ -53,6 +53,6 @@ mod tests {
     use super::*;
     #[test]
     fn test_lorawan_class_id() {
-        assert_eq!(LorawanSetup::new().class_id(), 107);
+        assert_eq!(LorawanSetup::new().class_id(), 128);
     }
 }

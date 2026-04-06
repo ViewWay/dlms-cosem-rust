@@ -56,7 +56,7 @@ impl ImageTransfer {
 
 impl CosemObject for ImageTransfer {
     fn class_id(&self) -> u16 {
-        25
+        18
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -125,7 +125,7 @@ mod tests {
     #[test]
     fn test_image_transfer_class_id() {
         let it = ImageTransfer::new(ObisCode::new(0, 0, 44, 0, 0, 255));
-        assert_eq!(it.class_id(), 25);
+        assert_eq!(it.class_id(), 18);
     }
 
     #[test]

@@ -162,13 +162,13 @@ mod tests {
         assert_eq!(objects.len(), 19);
 
         let class_ids: Vec<u16> = objects.iter().map(|(cid, _)| *cid).collect();
-        assert!(class_ids.contains(&12)); // ActivityCalendar
+        assert!(class_ids.contains(&20)); // ActivityCalendar
         assert!(class_ids.contains(&204)); // Calendar
-        assert!(class_ids.contains(&10)); // ScriptTable
+        assert!(class_ids.contains(&9)); // ScriptTable
         assert!(class_ids.contains(&1)); // Data
         assert!(class_ids.contains(&203)); // AlarmHandler
-        assert!(class_ids.contains(&9)); // AssociationLN
-        assert!(class_ids.contains(&2)); // AssociationSN
+        assert!(class_ids.contains(&15)); // AssociationLN
+        assert!(class_ids.contains(&12)); // AssociationSN
         assert!(class_ids.contains(&206)); // CommControl
         assert!(class_ids.contains(&63)); // StatusMapping
     }
@@ -324,21 +324,21 @@ mod tests {
     #[test]
     fn test_e2e_get_association_ln() {
         let server = create_extended_server();
-        let result = server.handle_get(9, &ObisCode::new(0, 0, 40, 0, 0, 255), 1);
+        let result = server.handle_get(15, &ObisCode::new(0, 0, 40, 0, 0, 255), 1);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_e2e_get_association_sn() {
         let server = create_extended_server();
-        let result = server.handle_get(2, &ObisCode::new(0, 0, 41, 0, 0, 255), 1);
+        let result = server.handle_get(12, &ObisCode::new(0, 0, 41, 0, 0, 255), 1);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_e2e_get_activity_calendar() {
         let server = create_extended_server();
-        let result = server.handle_get(12, &ObisCode::new(0, 0, 12, 0, 0, 255), 1);
+        let result = server.handle_get(20, &ObisCode::new(0, 0, 12, 0, 0, 255), 1);
         assert!(result.is_ok());
     }
 

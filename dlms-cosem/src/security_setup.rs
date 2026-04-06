@@ -34,7 +34,7 @@ impl SecuritySetup {
 
 impl CosemObject for SecuritySetup {
     fn class_id(&self) -> u16 {
-        70
+        64
     }
     fn logical_name(&self) -> ObisCode {
         self.logical_name
@@ -86,7 +86,7 @@ mod tests {
     fn test_security_setup_class_id() {
         assert_eq!(
             SecuritySetup::new(ObisCode::new(0, 0, 43, 0, 0, 255)).class_id(),
-            70
+            64
         );
     }
     #[test]

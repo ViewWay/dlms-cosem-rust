@@ -61,7 +61,7 @@ impl AssociationSN {
 
 impl CosemObject for AssociationSN {
     fn class_id(&self) -> u16 {
-        2
+        12
     }
 
     fn logical_name(&self) -> ObisCode {
@@ -130,7 +130,7 @@ mod tests {
     #[test]
     fn test_association_sn_new() {
         let assoc = AssociationSN::new(ObisCode::new(0, 0, 40, 0, 1, 255));
-        assert_eq!(assoc.class_id(), 2);
+        assert_eq!(assoc.class_id(), 12);
     }
 
     #[test]
