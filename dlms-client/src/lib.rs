@@ -93,8 +93,11 @@ impl<T: Transport> DlmsClient<T> {
     pub fn associate_hdlc(&mut self) -> Result<AssociateResult, ClientError> {
         self.connect()?;
         // Send SNRM (Set Normal Response Mode)
-        let snrm = dlms_hdlc::build_frame(self.config.server_address, 0x83, &[]);
-        self.transport.send(&snrm).map_err(ClientError::Transport)?;
+        let dest = dlms_hdlc::HdlcAddress::one_byte(self.config.server_address);
+        let src = dlms_hdlc::HdlcAddress::one_byte(self.config.client_address);
+        let ctrl = dlms_hdlc::ControlField::u_frame(dlms_hdlc::u_frame::SNRM, true);
+        let snrm = dlms_hdlc::build_frame(false, &dest, &src, &ctrl, &[]);
+        self.transport.send(&snrm).map_err(ClientError::Transport)?;;
 
         // Wait for UA
         let mut buf = [0u8; 1024];
@@ -122,15 +125,11 @@ impl<T: Transport> DlmsClient<T> {
         let aarq_bytes = aarq.encode();
 
         // Send AARQ in I-frame
-        let control = dlms_hdlc::FrameType::I {
-            send_seq: self.send_seq,
-            recv_seq: self.recv_seq,
-        }
-        .to_control();
-        let frame = dlms_hdlc::build_frame(self.config.server_address, control, &aarq_bytes);
+        let control = dlms_hdlc::ControlField::i_frame(self.send_seq, self.recv_seq, false);
+        let frame = dlms_hdlc::build_frame(false, &dest, &src, &control, &aarq_bytes);
         self.transport
             .send(&frame)
-            .map_err(ClientError::Transport)?;
+            .map_err(ClientError::Transport)?;;
         self.send_seq = (self.send_seq + 1) & 0x07;
 
         // Wait for AARE
@@ -205,15 +204,13 @@ impl<T: Transport> DlmsClient<T> {
         apdu.extend_from_slice(&get_request[1..]);
 
         // Send in I-frame
-        let control = dlms_hdlc::FrameType::I {
-            send_seq: self.send_seq,
-            recv_seq: self.recv_seq,
-        }
-        .to_control();
-        let frame = dlms_hdlc::build_frame(self.config.server_address, control, &apdu);
+        let dest = dlms_hdlc::HdlcAddress::one_byte(self.config.server_address);
+        let src = dlms_hdlc::HdlcAddress::one_byte(self.config.client_address);
+        let control = dlms_hdlc::ControlField::i_frame(self.send_seq, self.recv_seq, false);
+        let frame = dlms_hdlc::build_frame(false, &dest, &src, &control, &apdu);
         self.transport
             .send(&frame)
-            .map_err(ClientError::Transport)?;
+            .map_err(ClientError::Transport)?;;
         self.send_seq = (self.send_seq + 1) & 0x07;
 
         // Receive response
@@ -246,7 +243,10 @@ impl<T: Transport> DlmsClient<T> {
     /// Disconnect
     pub fn disconnect(&mut self) -> Result<(), ClientError> {
         // Send DISC
-        let disc = dlms_hdlc::build_frame(self.config.server_address, 0x53, &[]);
+        let dest = dlms_hdlc::HdlcAddress::one_byte(self.config.server_address);
+        let src = dlms_hdlc::HdlcAddress::one_byte(self.config.client_address);
+        let ctrl = dlms_hdlc::ControlField::u_frame(dlms_hdlc::u_frame::DISC, true);
+        let disc = dlms_hdlc::build_frame(false, &dest, &src, &ctrl, &[]);
         let _ = self.transport.send(&disc);
         self.transport.close().map_err(ClientError::Transport)?;
         self.state = ClientState::Disconnected;

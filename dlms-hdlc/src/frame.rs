@@ -29,9 +29,9 @@ impl FrameType {
                 recv_seq: (control >> 5) & 0x07,
             }
         } else {
-            // U-frame: bits 1-0=11, modifier bits 5-2, P/F bit 4
+            // U-frame: bits 1-0=11, P/F bit 4
             FrameType::U {
-                u_type: (control >> 2) & 0x0F,
+                u_type: control & !0x10, // base value without P/F
                 poll_final: (control >> 4) & 0x01 == 1,
             }
         }
@@ -58,19 +58,22 @@ impl FrameType {
 
 /// U-frame types (modifier bits)
 pub mod u_frame {
-    pub const SNRM: u8 = 0x00;  // Set Normal Response Mode
-    const DISC: u8 = 0x02;      // Disconnect
-    pub const UA: u8 = 0x03;    // Unnumbered Acknowledge
+    /// Base value with P/F=0: 0x83
+    pub const SNRM: u8 = 0x83;  // Set Normal Response Mode
+    /// Base value with P/F=0: 0x43
+    pub const DISC: u8 = 0x43;  // Disconnect
+    /// Base value with P/F=0: 0x63
+    pub const UA: u8 = 0x63;    // Unnumbered Acknowledge
     const DM: u8 = 0x0F;        // Disconnected Mode
-    const FRMR: u8 = 0x01;      // Frame Reject
-    const UI: u8 = 0x00;        // Unnumbered Information (different P/F pattern)
+    const FRMR: u8 = 0x87;      // Frame Reject
+    const UI: u8 = 0x03;        // Unnumbered Information
 
     pub fn is_snrm(control: u8) -> bool {
-        control == 0x93
+        (control & 0xEF) == 0x83
     }
 
     pub fn is_disc(control: u8) -> bool {
-        control == 0x53
+        (control & 0xEF) == 0x43
     }
 
     pub fn is_ua(control: u8) -> bool {
@@ -135,10 +138,9 @@ impl ControlField {
     }
 
     /// Create U-frame control field
-    pub fn u_frame(u_type: u8, poll_final: bool) -> Self {
-        let raw = ((poll_final as u8) << 4)
-            | ((u_type & 0x0F) << 2)
-            | 0x03;
+    /// Create U-frame control field from base value (P/F=0) and poll_final flag
+    pub fn u_frame(base: u8, poll_final: bool) -> Self {
+        let raw = if poll_final { base | 0x10 } else { base & !0x10 };
         Self { raw }
     }
 }
@@ -483,7 +485,7 @@ mod tests {
     fn test_frame_type_u() {
         let ft = FrameType::from_control(0x93);
         if let FrameType::U { u_type, poll_final } = ft {
-            assert_eq!(u_type, 0x04); // SNRM modifier bits
+            assert_eq!(u_type, u_frame::SNRM); // SNRM modifier bits
             assert!(poll_final);
         } else {
             panic!("Expected U-frame");
@@ -493,7 +495,7 @@ mod tests {
     #[test]
     fn test_control_i_frame() {
         let cf = ControlField::i_frame(3, 5, true);
-        assert_eq!(cf.raw, 0xAB); // 101 1 011 0 = N(R)=5, P=1, N(S)=3
+        assert_eq!(cf.raw, 0xB6); // N(R)=5, P=1, N(S)=3
         assert_eq!(cf.poll_final(), true);
     }
 
@@ -506,7 +508,7 @@ mod tests {
 
     #[test]
     fn test_control_u_frame_snrm() {
-        let cf = ControlField::u_frame(0x04, true); // SNRM modifier
+        let cf = ControlField::u_frame(u_frame::SNRM, true); // SNRM modifier
         assert_eq!(cf.raw, 0x93);
         assert!(u_frame::is_snrm(cf.raw));
     }

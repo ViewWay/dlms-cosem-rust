@@ -8,9 +8,9 @@ pub fn raw_frame(bytes: &[u8]) -> Vec<u8> {
     frame
 }
 
-/// Create a valid HDLC frame using dlms-hdlc's build_frame
+/// Create a valid HDLC frame using dlms-hdlc's build_frame_simple
 pub fn build_test_frame(address: u8, control: u8, info: &[u8]) -> Vec<u8> {
-    dlms_hdlc::build_frame(address, control, info)
+    dlms_hdlc::build_frame_simple(address, control, info)
 }
 
 /// Parse all frames from raw bytes

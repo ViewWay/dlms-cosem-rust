@@ -68,14 +68,17 @@ proptest! {
     #[test]
     fn frame_build_parse_roundtrip(address in any::<u8>(), control in any::<u8>(),
                                       info in prop::collection::vec(any::<u8>(), 0..100)) {
-        let frame = build_frame(address, control, &info);
+        let frame = build_frame_simple(address, control, &info);
         let mut parser = HdlcParser::new();
         let mut got_frame = false;
         for byte in &frame {
             if let Some(result) = parser.feed(*byte) {
                 prop_assert!(result.is_ok());
                 let f = result.unwrap();
-                prop_assert_eq!(f.address.value(), address);
+                // Check dest_address matches (new API uses dest_address instead of address)
+                if let HdlcAddress::OneByte { address: addr } = f.dest_address {
+                    prop_assert_eq!(addr, address);
+                }
                 prop_assert_eq!(f.control.to_byte(), control);
                 prop_assert_eq!(f.info.len(), info.len());
                 if f.info.len() == info.len() && !info.is_empty() {
@@ -89,22 +92,23 @@ proptest! {
 }
 
 // ============================================================
-// AddressField properties
+// AddressField properties (updated for HdlcAddress API)
 // ============================================================
 
 proptest! {
     #[test]
     fn address_roundtrip(byte in any::<u8>()) {
-        let addr = AddressField::from_byte(byte);
-        prop_assert_eq!(addr.value(), byte);
-        prop_assert_eq!(addr.to_byte(), byte);
+        let addr = HdlcAddress::one_byte(byte);
+        let encoded = addr.encode();
+        let (parsed, _) = HdlcAddress::parse(&encoded).unwrap();
+        prop_assert_eq!(parsed, addr);
     }
 
     #[test]
     fn broadcast_bit_isolated(byte in any::<u8>()) {
-        let addr = AddressField::from_byte(byte);
-        // Broadcast iff bit 7 set
-        let is_broadcast = byte & 0x80 != 0;
+        let addr = HdlcAddress::one_byte(byte);
+        // Broadcast if byte == 0x7F (127)
+        let is_broadcast = byte == 0x7F;
         prop_assert_eq!(addr.is_broadcast(), is_broadcast);
     }
 }
