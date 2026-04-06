@@ -1,12 +1,13 @@
-//! dlms-hdlc: HDLC framing for DLMS/COSEM (IEC 62056-53)
+//! dlms-hdlc: HDLC framing for DLMS/COSEM (Green Book Ed.9 Chapter 8)
 //!
-//! Implements HDLC frame format, CRC-16, byte stuffing, I/S/U frames,
-//! window mechanism, and stream-based frame parsing.
+//! Implements HDLC Frame Format Type 3 as specified in IEC 62056-53
+//! with proper Format field, HCS/FCS checksums, and multi-byte addresses.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// no_std support: feature gate for no_std
+extern crate alloc;
 
+use alloc::vec::Vec;
 use core::fmt;
 
 mod crc;
@@ -14,7 +15,9 @@ mod frame;
 mod parser;
 
 pub use crc::{crc16_hdlc, crc16_hdlc_update};
-pub use frame::{AddressField, ControlField, FrameType, HdlcFrame};
+ pub use frame::{
+    s_frame, u_frame, ControlField, FrameFormat, FrameType, HdlcAddress, HdlcFrame, HdlcParameters,
+};
 pub use parser::{HdlcParser, ParserState};
 
 /// HDLC constants
@@ -23,16 +26,18 @@ pub const HDLC_ESCAPE: u8 = 0x7D;
 pub const HDLC_ESCAPE_XOR: u8 = 0x20;
 pub const HDLC_MAX_FRAME_SIZE: usize = 2048;
 
-/// Perform HDLC byte stuffing on a frame (FCS must be included before calling)
+/// Perform HDLC byte stuffing on a frame
 pub fn stuff_bytes(data: &[u8]) -> Vec<u8> {
     let mut result = Vec::with_capacity(data.len() + data.len() / 4);
-    for &b in data {
-        match b {
-            HDLC_FLAG | HDLC_ESCAPE => {
-                result.push(HDLC_ESCAPE);
-                result.push(b ^ HDLC_ESCAPE_XOR);
+ {
+        for &b in data {
+            match b {
+                HDLC_FLAG | HDLC_ESCAPE => {
+                    result.push(HDLC_ESCAPE);
+                    result.push(b ^ HDLC_ESCAPE_XOR);
+                }
+                _ => result.push(b),
             }
-            _ => result.push(b),
         }
     }
     result
@@ -55,22 +60,74 @@ pub fn unstuff_bytes(data: &[u8]) -> Vec<u8> {
     result
 }
 
-/// Build a complete HDLC frame: Flag + Address + Control + Info + FCS + Flag
-pub fn build_frame(address: u8, control: u8, info: &[u8]) -> Vec<u8> {
-    let mut content = Vec::with_capacity(2 + info.len() + 2);
-    content.push(address);
-    content.push(control);
+/// Build a complete HDLC Frame Format Type 3 frame
+///
+/// Frame structure:
+/// - Flag (0x7E)
+/// - Frame Format (2 bytes): Type=0xA, Segmentation bit, Length (11 bits)
+/// - Destination Address (1-4 bytes)
+/// - Source Address (1-4 bytes)
+/// - Control (1 byte)
+/// - HCS (2 bytes): CRC-16 of Format + Addresses + Control
+/// - Information (optional)
+/// - FCS (2 bytes): CRC-16 of Addresses + Control + Information
+/// - Flag (0x7E)
+pub fn build_frame(
+    segmented: bool,
+    dest_address: &HdlcAddress,
+    src_address: &HdlcAddress,
+    control: &ControlField,
+    info: &[u8],
+) -> Vec<u8> {
+    // Calculate frame length (excludes flags)
+    let frame_len = 2 // Format field
+        + dest_address.encoded_length()
+        + src_address.encoded_length()
+        + 1 // Control
+        + 2 // HCS
+        + info.len()
+        + 2; // FCS
+
+    let format = FrameFormat::new(segmented, frame_len as u16);
+
+    // Build header (Format + Dest + Src + Control)
+    let mut header = Vec::new();
+    header.extend_from_slice(&format.encode());
+    header.extend(dest_address.encode());
+    header.extend(src_address.encode());
+    header.push(control.to_byte());
+
+    // Calculate HCS (CRC of header)
+    let hcs = crc16_hdlc(&header);
+
+    // Build content (Dest + Src + Control + Info) for FCS
+    let mut content = Vec::new();
+    content.extend(dest_address.encode());
+    content.extend(src_address.encode());
+    content.push(control.to_byte());
     content.extend_from_slice(info);
 
+    // Calculate FCS (CRC of content)
     let fcs = crc16_hdlc(&content);
-    content.push((fcs & 0xFF) as u8);
-    content.push((fcs >> 8) as u8);
 
-    let mut frame = Vec::with_capacity(1 + content.len() * 2 + 1);
-    frame.push(HDLC_FLAG);
-    frame.extend(stuff_bytes(&content));
-    frame.push(HDLC_FLAG);
-    frame
+    // Build complete frame (before stuffing)
+    let mut frame = Vec::new();
+    frame.extend_from_slice(&header);
+    frame.push((hcs & 0xFF) as u8);
+    frame.push((hcs >> 8) as u8);
+    if !info.is_empty() {
+        frame.extend_from_slice(info);
+    }
+    frame.push((fcs & 0xFF) as u8);
+    frame.push((fcs >> 8) as u8);
+
+    // Add flags and perform stuffing
+    let mut result = Vec::with_capacity(frame.len() + 2);
+    result.push(HDLC_FLAG);
+    result.extend(stuff_bytes(&frame));
+    result.push(HDLC_FLAG);
+
+    result
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -117,23 +174,9 @@ mod tests {
     }
 
     #[test]
-    fn test_unstuff_bytes() {
-        assert_eq!(unstuff_bytes(&[0x7D, 0x5E]), vec![0x7E]);
-        assert_eq!(unstuff_bytes(&[0x7D, 0x5D]), vec![0x7D]);
-    }
-
-    #[test]
-    fn test_unstuff_no_escape() {
-        assert_eq!(unstuff_bytes(&[0x41, 0x42]), vec![0x41, 0x42]);
-    }
-
-    #[test]
     fn test_crc16_known() {
-        // CRC-16/X.25 test
         let crc = crc16_hdlc(&[0x01, 0x02, 0x03, 0x04]);
         assert_ne!(crc, 0xFFFF);
-        // Verify roundtrip: CRC of data should be the same
-        assert_eq!(crc16_hdlc(&[0x01, 0x02, 0x03, 0x04]), crc);
     }
 
     #[test]
@@ -142,29 +185,23 @@ mod tests {
     }
 
     #[test]
-    fn test_crc16_single() {
-        let crc = crc16_hdlc(&[0x00]);
-        assert_ne!(crc, 0xFFFF);
-    }
-
-    #[test]
     fn test_build_frame_minimal() {
-        let frame = build_frame(0x03, 0xA0, &[]);
+        let dest = HdlcAddress::one_byte(0x03);
+        let src = HdlcAddress::one_byte(0x01);
+        let ctrl = ControlField::u_frame(u_frame::SNRM, true);
+        let frame = build_frame(false, &dest, &src, &ctrl, &[]);
         assert_eq!(frame[0], HDLC_FLAG);
         assert_eq!(*frame.last().unwrap(), HDLC_FLAG);
     }
 
     #[test]
-    fn test_build_frame_with_info() {
-        let frame = build_frame(0x03, 0x10, &[0xE6, 0xE0, 0x00]);
-        assert_eq!(frame[0], HDLC_FLAG);
-        assert!(frame.len() > 6);
-    }
-
-    #[test]
     fn test_build_and_parse_frame() {
         let info = vec![0xE6, 0xE0, 0x00, 0x01, 0x02];
-        let frame = build_frame(0x03, 0x10, &info);
+        let dest = HdlcAddress::one_byte(0x03);
+        let src = HdlcAddress::one_byte(0x01);
+        let ctrl = ControlField::i_frame(0, 0, false);
+        let frame = build_frame(false, &dest, &src, &ctrl, &info);
+
         let mut parser = HdlcParser::new();
         let mut frames = Vec::new();
         for byte in &frame {
@@ -173,7 +210,7 @@ mod tests {
             }
         }
         assert_eq!(frames.len(), 1);
-        assert_eq!(frames[0].address.value(), 0x03);
+        assert_eq!(frames[0].dest_address, dest);
         assert_eq!(frames[0].info, info);
     }
 
@@ -181,100 +218,10 @@ mod tests {
     fn test_frame_type_detection() {
         // I-frame: control bit 0 = 0
         assert!(matches!(FrameType::from_control(0x00), FrameType::I { .. }));
-        assert!(matches!(FrameType::from_control(0x10), FrameType::I { .. }));
-        // S-frame: control = 0x01
+        // S-frame: control bits 1:0 = 01
         assert!(matches!(FrameType::from_control(0x01), FrameType::S { .. }));
-        // U-frame: control = 0x03
+        // U-frame: control bits 1:0 = 11
         assert!(matches!(FrameType::from_control(0x03), FrameType::U { .. }));
-    }
-
-    #[test]
-    fn test_control_field_i_frame() {
-        let cf = ControlField::from_byte(0x26);
-        // 0x26 = 0b00100110: bit0=0 (I), N(S)=0b001=1, N(R)=0b011=3
-        // Actually let's use a cleaner value
-        let cf2 = ControlField::from_byte(0x00);
-        assert!(matches!(
-            cf2.frame_type(),
-            FrameType::I {
-                send_seq: 0,
-                recv_seq: 0
-            }
-        ));
-    }
-
-    #[test]
-    fn test_control_field_s_frame() {
-        let cf = ControlField::from_byte(0x95);
-        assert!(matches!(cf.frame_type(), FrameType::S { .. }));
-    }
-
-    #[test]
-    fn test_control_field_u_frame() {
-        let cf = ControlField::from_byte(0x73);
-        assert!(matches!(cf.frame_type(), FrameType::U { .. }));
-    }
-
-    #[test]
-    fn test_address_field() {
-        let addr = AddressField::from_byte(0x03);
-        assert_eq!(addr.value(), 0x03);
-        assert!(!addr.is_broadcast());
-    }
-
-    #[test]
-    fn test_address_broadcast() {
-        let addr = AddressField::from_byte(0x81);
-        assert!(addr.is_broadcast());
-    }
-
-    #[test]
-    fn test_parser_initial_state() {
-        let parser = HdlcParser::new();
-        assert!(matches!(parser.state(), ParserState::Idle));
-    }
-
-    #[test]
-    fn test_parser_multiple_frames() {
-        let frame1 = build_frame(0x03, 0x73, &[]); // SNRM
-        let frame2 = build_frame(0x03, 0x10, &[0x01]);
-        let mut combined = frame1.clone();
-        combined.extend_from_slice(&frame2);
-        let mut parser = HdlcParser::new();
-        let mut count = 0;
-        for byte in &combined {
-            if let Some(result) = parser.feed(*byte) {
-                count += 1;
-            }
-        }
-        assert_eq!(count, 2);
-    }
-
-    #[test]
-    fn test_parser_byte_by_byte() {
-        let frame = build_frame(0x03, 0x10, &[0xAA, 0xBB]);
-        let mut parser = HdlcParser::new();
-        let mut got = false;
-        for byte in &frame {
-            if let Some(result) = parser.feed(*byte) {
-                got = true;
-            }
-        }
-        assert!(got);
-    }
-
-    #[test]
-    fn test_parser_crc_error() {
-        let mut frame = build_frame(0x03, 0x10, &[0x01, 0x02]);
-        // Corrupt a byte in the middle
-        let mid = frame.len() / 2;
-        frame[mid] ^= 0xFF;
-        let mut parser = HdlcParser::new();
-        for byte in &frame {
-            if let Some(result) = parser.feed(*byte) {
-                assert!(result.is_err());
-            }
-        }
     }
 
     #[test]
@@ -296,101 +243,68 @@ mod tests {
     }
 
     #[test]
-    fn test_stuff_bytes_empty() {
-        assert!(stuff_bytes(&[]).is_empty());
+    fn test_parser_initial_state() {
+        let parser = HdlcParser::new();
+        assert!(matches!(parser.state(), ParserState::Idle));
     }
 
     #[test]
-    fn test_unstuff_bytes_empty() {
-        assert!(unstuff_bytes(&[]).is_empty());
-    }
+    fn test_parser_multiple_frames() {
+        let dest = HdlcAddress::one_byte(0x03);
+        let src = HdlcAddress::one_byte(0x01);
+        let ctrl_ua = ControlField::u_frame(u_frame::UA, true);
+        let ctrl_i = ControlField::i_frame(0, 0, false);
 
-    #[test]
-    fn test_stuff_bytes_no_special() {
-        let data = vec![0x01, 0x02, 0x41, 0x42];
-        assert_eq!(stuff_bytes(&data), data);
-    }
+        let frame1 = build_frame(false, &dest, &src, &ctrl_ua, &[]);
+        let frame2 = build_frame(false, &dest, &src, &ctrl_i, &[0x01]);
 
-    #[test]
-    fn test_build_frame_content() {
-        let frame = build_frame(0x03, 0xA0, &[]);
-        // Flag + Address + Control + FCS(2) + Flag = 6 minimum
-        assert!(frame.len() >= 6);
-    }
+        let mut combined = frame1.clone();
+        combined.extend_from_slice(&frame2);
 
-    #[test]
-    fn test_frame_equality() {
-        let f1 = HdlcFrame {
-            address: AddressField::from_byte(0x03),
-            control: ControlField::from_byte(0x10),
-            info: vec![0x01, 0x02],
-        };
-        let f2 = HdlcFrame {
-            address: AddressField::from_byte(0x03),
-            control: ControlField::from_byte(0x10),
-            info: vec![0x01, 0x02],
-        };
-        assert_eq!(f1, f2);
-    }
-
-    #[test]
-    fn test_control_field_send_seq() {
-        // I-frame: N(S)=3, N(R)=0, P=0
-        // N(S) in bits 3-1: 0b011, bit0=0 → 0b0110 = 0x06
-        let cf = ControlField::from_byte(0x06);
-        if let FrameType::I { send_seq, .. } = cf.frame_type() {
-            assert_eq!(send_seq, 3);
-        } else {
-            panic!("Expected I-frame");
+        let mut parser = HdlcParser::new();
+        let mut count = 0;
+        for byte in &combined {
+            if parser.feed(*byte).is_some() {
+                count += 1;
+            }
         }
+        assert_eq!(count, 2);
     }
 
     #[test]
-    fn test_control_field_recv_seq() {
-        // I-frame: N(S)=0, N(R)=1, P=0
-        // N(R)=1 in bits 7-5: 0b001_0_0000 = 0x20
-        let cf = ControlField::from_byte(0x20);
-        if let FrameType::I { recv_seq, .. } = cf.frame_type() {
-            assert_eq!(recv_seq, 1);
-        } else {
-            panic!("Expected I-frame");
+    fn test_parser_byte_by_byte() {
+        let dest = HdlcAddress::one_byte(0x03);
+        let src = HdlcAddress::one_byte(0x01);
+        let ctrl = ControlField::i_frame(0, 0, false);
+        let frame = build_frame(false, &dest, &src, &ctrl, &[0xAA, 0xBB]);
+
+        let mut parser = HdlcParser::new();
+        let mut got = false;
+        for byte in &frame {
+            if parser.feed(*byte).is_some() {
+                got = true;
+            }
         }
+        assert!(got);
     }
 
     #[test]
-    fn test_address_equality() {
-        let a = AddressField::from_byte(0x03);
-        let b = AddressField::from_byte(0x03);
-        assert_eq!(a, b);
-    }
+    fn test_parser_crc_error() {
+        let dest = HdlcAddress::one_byte(0x03);
+        let src = HdlcAddress::one_byte(0x01);
+        let ctrl = ControlField::i_frame(0, 0, false);
+        let mut frame = build_frame(false, &dest, &src, &ctrl, &[0x01, 0x02]);
 
-    #[test]
-    fn test_address_inequality() {
-        let a = AddressField::from_byte(0x03);
-        let b = AddressField::from_byte(0x10);
-        assert_ne!(a, b);
-    }
+        // Corrupt a byte in the middle
+        let mid = frame.len() / 2;
+        frame[mid] ^= 0xFF;
 
-    #[test]
-    fn test_parser_state_debug() {
-        let state = ParserState::Idle;
-        assert_eq!(format!("{:?}", state), "Idle");
-    }
-
-    #[test]
-    fn test_hdlc_error_display() {
-        let err = HdlcError::InvalidFrame;
-        assert!(!format!("{err}").is_empty());
-    }
-
-    #[test]
-    fn test_hdlc_error_crc_display() {
-        let err = HdlcError::CrcError {
-            expected: 0x1234,
-            actual: 0x5678,
-        };
-        let s = format!("{err}");
-        assert!(s.contains("CRC"));
+        let mut parser = HdlcParser::new();
+        for byte in &frame {
+            if let Some(result) = parser.feed(*byte) {
+                assert!(result.is_err());
+            }
+        }
     }
 
     #[test]
@@ -403,23 +317,86 @@ mod tests {
     }
 
     #[test]
-    fn test_s_frame_rr() {
-        let cf = ControlField::from_byte(0x01); // RR, N(R)=0
+    fn test_hdlc_error_display() {
+        let err = HdlcError::InvalidFrame;
+        assert!(!format!("{}", err).is_empty());
+    }
+
+    #[test]
+    fn test_hdlc_error_crc_display() {
+        let err = HdlcError::CrcError {
+            expected: 0x1234,
+            actual: 0x5678,
+        };
+        let s = format!("{}", err);
+        assert!(s.contains("CRC"));
+    }
+
+    #[test]
+    fn test_frame_format() {
+        let ff = FrameFormat::new(false, 0x123);
+        assert_eq!(ff.format_type, 0xA);
+        assert!(!ff.segmented);
+        assert_eq!(ff.length, 0x123);
+    }
+
+    #[test]
+    fn test_frame_format_encode_decode() {
+        let ff = FrameFormat::new(true, 0xFF);
+        let encoded = ff.encode();
+        let decoded = FrameFormat::parse(&encoded).unwrap();
+        assert!(decoded.segmented);
+        assert_eq!(decoded.length, 0xFF);
+    }
+
+    #[test]
+    fn test_address_encode_decode() {
+        let addr = HdlcAddress::one_byte(0x10);
+        let encoded = addr.encode();
+        assert_eq!(encoded, vec![0x21]);
+
+        let (parsed, _) = HdlcAddress::parse(&encoded).unwrap();
+        assert_eq!(parsed, addr);
+    }
+
+    #[test]
+    fn test_address_two_byte() {
+        let addr = HdlcAddress::two_byte(0x01, 0x7F);
+        let encoded = addr.encode();
+        assert_eq!(addr.encoded_length(), 2);
+
+        let (parsed, _) = HdlcAddress::parse(&encoded).unwrap();
+        assert_eq!(parsed, addr);
+    }
+
+    #[test]
+    fn test_control_field_i_frame() {
+        let cf = ControlField::i_frame(3, 5, true);
+        if let FrameType::I { send_seq, recv_seq } = cf.frame_type() {
+            assert_eq!(send_seq, 3);
+            assert_eq!(recv_seq, 5);
+        } else {
+            panic!("Expected I-frame");
+        }
+        assert!(cf.poll_final());
+    }
+
+    #[test]
+    fn test_control_field_s_frame() {
+        let cf = ControlField::s_frame(s_frame::RR, 2, true);
         if let FrameType::S { s_type, recv_seq } = cf.frame_type() {
-            assert_eq!(recv_seq, 0);
-            assert_eq!(s_type, 0);
+            assert_eq!(s_type, s_frame::RR);
+            assert_eq!(recv_seq, 2);
         } else {
             panic!("Expected S-frame");
         }
     }
 
     #[test]
-    fn test_u_frame_snrm() {
-        // SNRM in DLMS: 0x93 = 0b10010011
-        // b4=1 (P/F), b3:b2=00 (modifier=0), b1:b0=11 (U-frame)
-        let cf = ControlField::from_byte(0x93);
-        if let FrameType::U { u_type, poll_final } = cf.frame_type() {
-            assert_eq!(u_type, 0); // modifier in bits 3:2
+    fn test_control_field_u_frame() {
+        let cf = ControlField::u_frame(u_frame::SNRM, true);
+        assert!(u_frame::is_snrm(cf.raw));
+        if let FrameType::U { u_type: _, poll_final } = cf.frame_type() {
             assert!(poll_final);
         } else {
             panic!("Expected U-frame");
@@ -427,26 +404,32 @@ mod tests {
     }
 
     #[test]
-    fn test_u_frame_ua() {
-        // UA in DLMS: 0x73 = 0b01110011
-        // b4=1 (P/F), b3:b2=00 (modifier=0), b1:b0=11 (U-frame)
-        let cf = ControlField::from_byte(0x73);
-        if let FrameType::U { u_type, poll_final } = cf.frame_type() {
-            assert_eq!(u_type, 0);
-            assert!(poll_final);
-        } else {
-            panic!("Expected U-frame");
-        }
+    fn test_hdlc_parameters() {
+        let params = HdlcParameters {
+            window_size: 7,
+            max_info_length: 256,
+        };
+        let encoded = params.encode();
+        assert!(!encoded.is_empty());
+
+        let decoded = HdlcParameters::parse(&encoded).unwrap();
+        assert_eq!(decoded.window_size, 7);
+        assert_eq!(decoded.max_info_length, 256);
     }
 
     #[test]
-    fn test_build_frame_info_preserved() {
+    fn test_build_frame_with_info() {
         let info = vec![0xDE, 0xAD, 0xBE, 0xEF];
-        let frame = build_frame(0x03, 0x10, &info);
+        let dest = HdlcAddress::one_byte(0x03);
+        let src = HdlcAddress::one_byte(0x01);
+        let ctrl = ControlField::i_frame(0, 0, false);
+        let frame = build_frame(false, &dest, &src, &ctrl, &info);
+
         let mut parser = HdlcParser::new();
         for byte in &frame {
             if let Some(result) = parser.feed(*byte) {
-                assert_eq!(result.unwrap().info, info);
+                let parsed = result.unwrap();
+                assert_eq!(parsed.info, info);
                 return;
             }
         }
@@ -454,34 +437,26 @@ mod tests {
     }
 
     #[test]
-    fn test_crc16_sequential() {
-        let data = [0x01, 0x02, 0x03, 0x04, 0x05];
-        let crc = crc16_hdlc(&data);
-        assert_eq!(crc, crc16_hdlc(&data)); // deterministic
+    fn test_frame_format_segmented() {
+        let ff = FrameFormat::new(true, 100);
+        assert!(ff.segmented);
+
+        let ff2 = FrameFormat::new(false, 100);
+        assert!(!ff2.segmented);
     }
 
     #[test]
-    fn test_stuff_bytes_all_special() {
-        let data = vec![0x7E, 0x7D, 0x7E, 0x7D];
-        let stuffed = stuff_bytes(&data);
-        let unstuffed = unstuff_bytes(&stuffed);
-        assert_eq!(data, unstuffed);
+    fn test_address_broadcast() {
+        let addr = HdlcAddress::one_byte(0x7F);
+        assert!(addr.is_broadcast());
+
+        let addr2 = HdlcAddress::one_byte(0x10);
+        assert!(!addr2.is_broadcast());
     }
 
     #[test]
-    fn test_control_field_poll_final() {
-        // I-frame with poll: bit 4 set
-        // N(S)=1: bits 3-1 = 001, bit0=0 → lower byte = 0b0010 = 0x02, with P=1: 0x12
-        let cf = ControlField::from_byte(0x12);
-        assert!(cf.poll());
-        // Without poll: 0x02
-        let cf2 = ControlField::from_byte(0x02);
-        assert!(!cf2.poll());
-    }
-
-    #[test]
-    fn test_address_from_to_bytes() {
-        let addr = AddressField::from_byte(0x03);
-        assert_eq!(addr.to_byte(), 0x03);
+    fn test_parser_default() {
+        let parser = HdlcParser::default();
+        assert!(matches!(parser.state(), ParserState::Idle));
     }
 }

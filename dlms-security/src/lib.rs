@@ -11,14 +11,20 @@
 
 // no_std support: feature gate for no_std
 
+extern crate alloc;
+
 use core::fmt;
 
 mod hls;
 mod kdf;
 mod key_management;
+mod sm2;
 mod sm4;
 mod sm4_gcm;
 mod suite;
+
+#[cfg(feature = "std")]
+mod certificate;
 
 #[cfg(test)]
 mod property_tests;
@@ -26,9 +32,13 @@ mod property_tests;
 pub use hls::{HlsAuthResult, HlsContext, HlsStep};
 pub use kdf::{kdf, kdf_gmac};
 pub use key_management::KeyManagement;
+pub use sm2::{sm2_generate_keypair, sm2_sign, sm2_verify, Sm2Error, Sm2PrivateKey, Sm2PublicKey, Sm2Signature};
 pub use sm4::{sm4_decrypt, sm4_encrypt, Sm4Block, Sm4Key};
 pub use sm4_gcm::{sm4_gcm_decrypt, sm4_gcm_encrypt, sm4_gmac, sm4_gmac_verify};
 pub use suite::SecuritySuite;
+
+#[cfg(feature = "std")]
+pub use certificate::{Certificate, CertificateError, CertificateStore, PublicKeyInfo, Validity};
 
 #[cfg(feature = "aes")]
 mod aes_gcm_impl;
@@ -47,6 +57,8 @@ pub enum SecurityError {
     InvalidTag,
     UnsupportedSuite(u8),
     KdfError,
+    Sm2Error(Sm2Error),
+    CertificateError(CertificateError),
 }
 
 #[cfg(feature = "std")]
@@ -64,6 +76,8 @@ impl fmt::Display for SecurityError {
             SecurityError::InvalidTag => write!(f, "Invalid authentication tag"),
             SecurityError::UnsupportedSuite(s) => write!(f, "Unsupported security suite: {s}"),
             SecurityError::KdfError => write!(f, "Key derivation error"),
+            SecurityError::Sm2Error(e) => write!(f, "SM2 error: {e}"),
+            SecurityError::CertificateError(e) => write!(f, "Certificate error: {e}"),
         }
     }
 }
